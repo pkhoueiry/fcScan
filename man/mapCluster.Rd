@@ -34,8 +34,8 @@ clusters = data.frame(chr = c("chr22", "chr22", "chr22", "chr22", "chr22"
     1, 1, 1, 1), strand = c("+", "+", "+", "+", "+"))
 
 mapCluster( x = clusters, kent = NULL,
-chrom.sizes = "gfScan/extdata/hg19.chrom.sizes",
-chain = "gfScan/extdata/hg19ToMm10Chr22.over.chain")
+chrom.sizes = "fcScan/extdata/hg19.chrom.sizes",
+chain = "fcScan/extdata/hg19ToMm10Chr22.over.chain")
 }
 
 \value{
