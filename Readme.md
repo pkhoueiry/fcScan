@@ -1,7 +1,4 @@
-## All the files required for building the package are found in the master branch of SECOMOD.
-
-
-1. Clone git repository these files into a directory
+1. Git clone the project directory `git clone git@gitlab.com:pklab/fcScan.git`
 2. From the terminal run `R CMD build fcScan`
 3. Run `R CMD check fcScan_0.99.0.tar.gz`
 4. Run  `R CMD BiocCheck fcScan_0.99.0.tar.gz`
