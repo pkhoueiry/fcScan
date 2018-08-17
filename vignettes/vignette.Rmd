@@ -1,0 +1,490 @@
+---
+title: "fcScan"
+author:
+- Pierre Khoueiry
+- Ghiwa Khalil
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+package: fcScan
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}    
+  %\VignetteIndexEntry{fcScan}  
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+
+## Table of Contents
+* [Introduction](#introduction) 
+* [Install Packages](#Install Packages) 
+* [Packages Needed](#Packages Needed)  
+* [Overview](#Overview) 
+* [Parallelism](#Parallelism)  
+* [BED and VCF Files](#BED and VCF Files)  
+* [Data frame or files](#Data frame or files)  
+* [Setting the clustering condition](#Setting the clustering condition)  
+* [Greedy vs Non-Greedy ](#Greedy vs Non-Greedy)  
+* [Example on Clustering](#Example on Clustering)  
+* [Example on Mapping](#Example on Mapping)  
+* [Plotting Mapped Clusters using Rcircos](#Plotting Mapped Clusters using Rcircos)  
+* [Result](#Result)
+* [Session Info](#Session Info)
+
+
+## <a id="introduction"></a> Introduction
+
+The eukaryotic system of expression relies on transcription factors (TFs) 
+which play an important role in activating and deactivating genes. TFs are not 
+solely responsible for gene regulation; eukaryotes also rely on cell signaling, 
+RNA splicing, siRNA control mechanisms, and chromatin modifications. 
+
+Transcription factors play an important role in activating and deactivating 
+genes and in turn this process is determinant for the expression of proteins. 
+Any mutation in these regions creates hot spots for identifiying disorder 
+causing agents. 
+
+Detecting how clusters of these transciption factors are clustered within the 
+genome also gives insights on certain biological processes they manage.
+
+fcScan is a package which is designed to detect clusters of sites based on 
+user defined parameters. It allows
+the user to choose the following:  
+    
+    -The required window size of the cluster
+
+    -What genomic data the cluster should include   
+
+    -On which strand to build the cluster   
+
+    -On which chromosome to build the cluster   
+
+    -The distance required between each cluster   
+
+    -Whether data other than the required is allowed
+
+In addition to that, this package allows users to detect orthologous regions 
+found between detected clusters and other species.
+
+## <a id="Packages Needed"></a> Packages Needed
+
+fcScan requires the following packages to be installed :
+
+    -parallel   
+    -doParallel 
+    -foreach    
+    -stats      
+    -utils      
+
+
+## <a id="Install Packages"></a> Install Packages
+
+    -install.packages("parallel")
+    -install.packages("doParallel")
+    -install.packages("foreach")
+    -install.packages("stats")
+    -install.packages("utils")
+    
+## <a id="Overview"></a> Overview
+
+Clustering is done through the `getCluster` function.
+This function is responsible for clustering based on the arguments given by 
+the user. 
+These clusters will be built on the strand and chromosome specified by the 
+user using `chr = "chrom1" str = "+"`, and the size of these 
+clusters will not exceed the given window size.  
+The distance between each cluster will depend on the value given by `overlap`. 
+
+If the value of overlap is a positive number then this signifies that the 
+clusters should be seperated by this value or more, and if the value 
+is a negative number then this means that the clusters can be overlapping by 
+this distance or less.  
+If `greedy = FALSE`, clusters will be labelled as **TRUE** if they contain 
+the same number of sites and type as the user requested in `c`.   
+If `greedy = TRUE`, clusters will be labelled as **TRUE** if they contain 
+the same number of sites and type as the user requested in `c` or more.
+
+An additional parameter is `order` which by default is **NULL**. This
+parameter allows the user to cluster sites in a specific order, therefore
+the clusters that will be labelled **TRUE** should have the same order
+as given in `order`. In case this parameter is **NULL** then the order
+of sites in the cluster will not matter.
+The output will be a data frame which has 
+`chr    start   end size    site    strand  isCluster   reason`
+
+An important note is that if the user is using `greedy = FALSE` and `order`
+contains values more than the condition parameter then an error will be raised
+since the user is requesting a cluster with an order containing more sites
+than the clustering condition.
+
+However, if `greedy = TRUE` then using `order` with more values than the 
+condition paramerter is allowed since a greedy cluster may contain more 
+sites than the required condition.
+
+**isCluster** will contains the TRUE or FALSE labels depending if the found
+cluster satisfied the required conditions.
+**reason** describes the reason why a certain cluster was labelled as FASLE.
+
+Mapping is done through `mapCluster`, this function is a wrapper for kent 
+utilities. It is required to have kent utils inorder to user `mapCluster`, 
+and the path to kent utils should be either given in the argument or set
+in the system path.
+
+## <a id="Parallelism"></a> Parallelism
+
+This package uses parallelism in the case the user wants to cluster on specific
+chromosomes. Each chromosome will be sent to a core to cluster on.
+For this we user, `foreach %dopar%`. It is important to note that by default the
+number of cores is set to 2 cores, and the function will not go in parallel
+in case the user wants to cluster on one chromosome only.
+
+## <a id="BED and VCF Files"></a> BED and VCF Files
+
+`getCluster` can accept BED and VCF files. BED-12, BED-6, BED-4, and Bed-3 
+file are accepted.
+Compressed and uncompressed vcf files are also accepted.
+
+There is no limit on the number of files this function takes aslong as for 
+each file entered there
+is a relative requirement on it given to the condition argument `c`.
+
+>`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, str = "+", chr = "chr9")`
+
+## <a id = "Data frame or files"></a>  Data frame or files
+
+Other than BED and VCF files, a data frame can be accepted.
+This data frame should have 5 columns containing the following:
+    
+> chr start   end strand  site
+
+The chr start and end columns are the relative position of each site.
+The site column should contain the family to which this site belongs to.
+start and end columns need to be numeric or integer while the rest need 
+to be character.
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
+                 start = c(10, 17, 25, 27, 32, 41), 
+                 end=c(15, 20, 30, 35, 40, 48),
+                 strand = c("+", "+", "+", "+", "+", "+"),
+                 site = c("1", "2", "2", "1", "3", "2"))
+
+knitr::kable(df)
+```
+
+
+## <a id = "Setting the clustering condition"></a> Setting the clustering condition
+
+The clustering condition `c` defines the number and type of genomic data to 
+be found in each cluster.
+`c = c("TATA" = 1, "GATA" = 2)`  
+This defines the cluster to have 3 sites, 1 of them should be a *TATA* binding 
+site, and the other 2 should be a *GATA* biding site.
+
+Another way of writing the condition is the following : 
+`x = ("TATA.bed","GATA.bed"), c = c(1,2)`  
+Given 2 files, *TATA.bed* and *GATA.bed*, this condition states that the user is 
+looking for clusters made from 1 TATA site and 2 GATA sites. The numbers 
+given in the condition are relative to the order of the files given. 
+
+In case a data frame is given instead of files, the user needs to **explicitly** 
+define the site name along with the number relative to each site. 
+Giving the condition as `c = c(1,2)` for a data frame will not be allowed.
+
+## <a id = "Greedy vs Non-Greedy"></a> Greedy vs Non-Greedy 
+
+When `greedy = FALSE`, `getCluster` will build clusters having the required
+window size and will label *TRUE* the ones that contain the exact number
+and type of genomic data provided in the condition argument.
+Clusters having the user defined window size but not satisfying
+the condition will be labelled as *FALSE*.
+
+`greedy = TRUE` will look for clusters having the required window size
+and will label *TRUE* the ones that contain the required condition of the
+genomic data or more. The rest will be labelled as *FALSE*. 
+
+
+## <a id = "Example on Clustering"></a> Example on Clustering
+
+Following will be an example of how to use `getCluster` function.
+This is an example of a data frame given instead of files.
+
+The data can be downloaded from the following link [http://compbio.mit.edu/encode-motifs/]
+
+This contains all known and discovered motifs for the ENCODE TFChIP-seq datasets
+
+In this example, `getCluster` was performed on the NANOG_known1 motif
+and TATA_known2 motif.
+`motif.txt` is a large file so it would be more efficient to handle
+it from the terminal using bash, to extract the required sites.
+
+
+To get the sites for each motif :
+    
+    
+> `grep -i "NANOG_known1" matches.txt > "NANOG_known1.txt"`
+> `grep -i "TATA_known2" matches.txt > "TATA_known2.txt"`
+
+Read each file into R
+
+> `NANOG = read.table("/home/gk39/tmp/NANOG_known1.txt", stringsAsFactors = FALSE)`
+> `TATA = read.table("/home/gk39/tmp/TATA_known2.txt", stringsAsFactors = FALSE)`
+
+Rearrange the columns to have the required data frame
+
+> `TATA = TATA[,c("V2","V3","V4","V5","V1")]`
+> `NANOG = NANOG[,c("V2","V3","V4","V5","V1")]`  
+> `head(TATA)`
+
+
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"), 
+                 start = c(25705L, 65916L, 119982L, 167008L, 266303L, 343330L), 
+                 end = c(25719L, 65930L, 119996L, 167022L, 266317L, 343344L), 
+                 strand = c("+", "-", "-", "+", "-", "+"),
+                 site = c("TATA_known2", "TATA_known2", "TATA_known2", 
+                          "TATA_known2", "TATA_known2", 
+                          "TATA_known2"))
+
+knitr::kable(df)
+```
+
+>`head(NANO)`
+
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"), 
+                 start = c(89192L, 93669L, 235753L, 239997L, 363873L, 415307L), 
+                 end = c(89203L, 93680L, 235764L, 240008L, 363884L, 415318L), 
+                 strand = c("+", "+", "+", "+", "-", "-"), 
+                 site = c("NANOG_known1", "NANOG_known1", "NANOG_known1", 
+                          "NANOG_known1", "NANOG_known1", "NANOG_known1"))
+
+knitr::kable(df)
+```
+
+>`x = rbind(TATA,NANOG)`
+>`colnames(x) = c("chr","start","end","strand","site")`
+
+
+
+In this example `getCluster` will search for clusters that contain a
+minimum of 1 NANOG_known1 site and 2 TATA_known2 sites, found within 1000bp,
+and the clusters should be seperated by a maximum of 5 overlapping base pairs.
+Since `chr = chr9` clusters will only be built on chromosome 9 and `str = "+"`
+and so clusters will only include sites found on the positive strand. 
+
+>`clusters = getCluster(x , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", str = "+")`
+
+
+
+The results are stored in a data frame named clusters. *clusters* contains 
+1606 observations with 8 variables
+
+
+>`head(clusters)`
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
+                 start = c("25818", "165838", "202789", "253853", "361625", 
+                           "387687"), 
+                 end = c("25832", "165852", "202800", "253867", "361639",
+                         "387701"), 
+                 clusterSize = c("14", "14", "11", "14", "14", "14"), 
+                 site = c("TATA_known2", "TATA_known2", "NANOG_known1", 
+                          "TATA_known2", "TATA_known2", "TATA_known2"), 
+                 strand = c("+", "+", "+", "+", "+", "+"), 
+                 isCluster = c("FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+                               "FALSE"), 
+                 name = c("c1", "c2", "c3", "c4", "c5", "c6"))
+
+knitr::kable(df)
+```
+
+The resulting data frame will contain the *TRUE* and *FALSE* labelled 
+clusters. To get only the cluster labelled by *TRUE*
+    We can subset by the following:
+    
+> `subset(clusters, isCluster %in% TRUE)`  
+> `head(clusters)`
+
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
+                 start = c("5831141", "9319579", "16533736", "21748099",
+                           "23403001", "23714517"), 
+                 end = c("5846962", "9331595", "16549756", "21753346",
+                         "23415107", "23728984"), 
+                 clusterSize = c("15821", "12016", "16020", "5247",
+                                 "12106", "14467"), 
+                 site = c("TATA_known2,TATA_known2,NANOG_known1",
+                          "NANOG_known1,TATA_known2,TATA_known2",
+                          "TATA_known2,TATA_known2,NANOG_known1", 
+                          "TATA_known2,NANOG_known1,TATA_known2",
+                          "NANOG_known1,TATA_known2,TATA_known2", 
+                          "TATA_known2,NANOG_known1,TATA_known2"), 
+                 strand = c("+", "+", "+", "+", "+", "+"), 
+                 isCluster = c("TRUE", "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"), 
+                 name = c("c94", "c138", "c253", "c331", "c347", "c354"))
+
+knitr::kable(df)
+```
+
+*clusters_TRUE* contains 20 observations with 8 variables.
+
+
+## <a id = "Example on Mapping"></a> Example on Mapping
+
+This package includes a function that can map orthologous regions 
+between species using Kent Utilities. 
+
+`mapCluster( x , kent, chrom.sizes, chain)`
+*x* is a data frame that contains the mapped clusters, the rest of the
+arguments are the path to kentUtils, to chrom.sizes file and to chain
+file being used. 
+
+By default, the path to kent is set to NULL since it is assumed that the
+path to kent in set in the system path of the user.
+In case this is not the case, then the user will need to give the relative
+path to kent utilities.
+
+`mapClusters` takes a Bed-6 format, and so must have the following columns:
+    
+    > chr   start   end name    score   strand  site
+
+
+So, to use our clusters we got from `getClusters` function, we need to a *score*
+column.
+We are going to use the data frame which contains the clusters labbelled *TRUE*
+to map the clusters which satisfied all the user defined conditions.
+
+> `clusters_TRUE = clusters_TRUE[,c("chr", "start", "end", "id", "score", "strand")]`  
+> `mapCluster( clusters_TRUE , chrom.sizes = "hg19.chrom.sizes", chain = "hg19ToMm10.over.chain")`
+
+```{r, echo=FALSE, results='asis'}
+df <- data.frame(SeqNames = c("chr19", "chr4", "chr4", "chr4", 
+                              "chr4", "chr4", "chr4", "chr4",
+                              "chr4", "chr4", "chr4", "chr4", 
+                              "chr4", "chr13", "chr13", "chr13",
+                              "chr4", "chr4", "chr4", "chr2"
+), 
+Start = c(29646385L, 76914893L, 84373653L, 89096005L, 90906555L, 
+          91272473L, 92895457L, 35596995L, 36196127L, 36932006L, 39138272L, 
+          71162604L, 71231574L, 51843935L, 52807767L, 52864104L, 55687810L, 
+          64208514L, 68827355L, 28663311L), 
+End = c(29664014L, 76930788L, 
+    84386597L, 89099760L, 90918616L, 91279251L, 92912899L, 35625610L, 
+    36211595L, 36949651L, 39159397L, 71167158L, 71260811L, 51860444L, 
+    52818892L, 52879722L, 55701839L, 64238113L, 68850614L, 28670470L
+          ), 
+Strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+", 
+           "+", "+", "+", "+", "+", "+", "+", "+", "+", "-"), 
+srcTName = c("chr9", 
+             "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", 
+             "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", 
+             "chr9", "chr9", "chr9"), 
+srcTStart = c(5831141L, 9319579L, 16533736L, 
+              21748099L, 23403001L, 23714517L, 25254361L, 27890002L, 28420039L, 
+              29192740L, 31384498L, 83422179L, 83497976L, 92216608L, 93938820L, 
+              94030069L, 110452876L, 118041889L, 122001846L, 135788286L), 
+srcTEnd = c(5846962L, 
+        9331595L, 16549756L, 21753346L, 23415107L, 23728984L, 25268779L, 
+        27899866L, 28433306L, 29211468L, 31402419L, 83435687L, 83517867L, 
+        92234756L, 93955288L, 94048072L, 110465819L, 118057829L, 122020632L, 
+                        135799106L), 
+srcStrand = c("+", "+", "+", "+", "+", "+", "+", 
+              "+", "+", "+", "+", "+", "+", "+", "+", "+", "+", "+", "+", "+"
+))
+
+knitr::kable(df)
+```
+
+The result of `mapClusters` is a data frame which contains 207 observations and 
+8 variables. The above example is only a small sample of the results.
+
+In the example above, we mapped the clusters from hg38 to Mm10.
+
+*SeqNames Start End Strand* are the representative information of the mapped
+regions in the mice species.
+*srcTName srcTStart srcTEnd srcStrand* are the representative information of
+the clustered regions.
+
+The columns on the left represent the mapped orthologous regions corresponding
+to the regions on the right.
+In the 10th row, the *SeqNames* is empty, and the *Start* and *End* region are
+represented by **--**. 
+
+This indicates that for this cluster, there was no orthologous region detected
+in Mm10.
+
+## <a id = "Plotting Mapped Clusters using Rcircos"></a> Plotting Mapped Clusters using Rcircos
+
+Using Rcircos, you can plot the resulting mapping from mapClusters.
+*mappedClusters* is the data frame that contains the mapped clusters.
+
+```
+input.bed = mappedClusters[,5:8]
+mouse.bed = mappedClusters[,1:4]
+mouse.bed$Start = as.integer(mouse.bed$Start)
+mouse.bed$End = as.integer(mouse.bed$End)
+data(UCSC.Mouse.GRCm38.CytoBandIdeogram)
+data(UCSC.HG38.Human.CytoBandIdeogram)
+
+mouse.data <- mouse.bed
+human.data <- input.bed
+
+link.data <- data.frame(human.data[,1:3], mouse.data[,1:3])
+
+species.list <- c("H", "M")
+
+link.data = link.data[-which(link.data$SeqNames ==""),]
+
+cyto.list <- list(UCSC.HG38.Human.CytoBandIdeogram,UCSC.Mouse.GRCm38.CytoBandIdeogram)
+
+RCircos.Multiple.Species.Core.Components(cyto.list,species.list, NULL, 5, 5)
+
+link.data[,1] <- paste(species.list[1], link.data[,1], sep="")
+
+link.data[,4] <- paste(species.list[2], link.data[,4], sep="")
+params <- RCircos.Get.Plot.Parameters()
+
+params$chrom.width<-0.4
+params$chrom.paddings <- 2000
+params$base.per.unit <- 30000
+
+pdf(file="HumanVsMouse.pdf", height=8, width=8)
+RCircos.Set.Plot.Area()
+par(mai=c(0.25, 0.25, 0.25, 0.25))
+plot.new()
+plot.window(c(-2.5,2.5), c(-2.5, 2.5))
+
+RCircos.Chromosome.Ideogram.Plot()
+
+track.num<-1
+RCircos.Link.Plot(link.data, track.num, FALSE)
+title(" Mouse and Human Gene Expression")
+legend(1, 2, legend=c("Right: Human","Left:  Mouse"), cex=0.8)
+dev.off()
+
+```
+
+
+## <a id = "Result"></a> Result
+
+```{r pressure, echo=FALSE, fig.cap="RCircos of Mapped Clusters", out.width = '100%'}
+knitr::include_graphics("./HumanVsMouse.png")
+```
+
+
+## <a id="Session Info"></a> Session Info
+
+
+```{r} 
+sessionInfo() 
+``` 
