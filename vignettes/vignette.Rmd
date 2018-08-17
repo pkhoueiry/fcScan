@@ -433,7 +433,7 @@ input.bed = mappedClusters[,5:8]
 mouse.bed = mappedClusters[,1:4]
 mouse.bed$Start = as.integer(mouse.bed$Start)
 mouse.bed$End = as.integer(mouse.bed$End)
-data(UCSC.Mouse.GRCm38.CytoBandIdeogram)
+data(UCSC.Mouse.GRCm19.CytoBandIdeogram)
 data(UCSC.HG38.Human.CytoBandIdeogram)
 
 mouse.data <- mouse.bed
@@ -445,7 +445,7 @@ species.list <- c("H", "M")
 
 link.data = link.data[-which(link.data$SeqNames ==""),]
 
-cyto.list <- list(UCSC.HG38.Human.CytoBandIdeogram,UCSC.Mouse.GRCm38.CytoBandIdeogram)
+cyto.list <- list(UCSC.HG38.Human.CytoBandIdeogram,UCSC.Mouse.GRCm19.CytoBandIdeogram)
 
 RCircos.Multiple.Species.Core.Components(cyto.list,species.list, NULL, 5, 5)
 
