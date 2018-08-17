@@ -96,7 +96,7 @@ Clustering is done through the `getCluster` function.
 This function is responsible for clustering based on the arguments given by 
 the user. 
 These clusters will be built on the strand and chromosome specified by the 
-user using `chr = "chrom1" str = "+"`, and the size of these 
+ciuser using `chr = "chrom1" str = "+"`, and the size of these 
 clusters will not exceed the given window size.  
 The distance between each cluster will depend on the value given by `overlap`. 
 
@@ -429,15 +429,11 @@ Using Rcircos, you can plot the resulting mapping from mapClusters.
 *mappedClusters* is the data frame that contains the mapped clusters.
 
 ```
-input.bed = mappedClusters[,5:8]
-mouse.bed = mappedClusters[,1:4]
-mouse.bed$Start = as.integer(mouse.bed$Start)
-mouse.bed$End = as.integer(mouse.bed$End)
+library(RCircos)
+human.data = mappedClusters[,5:8]
+mouse.data = mappedClusters[,1:4]
 data(UCSC.Mouse.GRCm38.CytoBandIdeogram)
-data(UCSC.HG38.Human.CytoBandIdeogram)
-
-mouse.data <- mouse.bed
-human.data <- input.bed
+data(UCSC.HG19.Human.CytoBandIdeogram)
 
 link.data <- data.frame(human.data[,1:3], mouse.data[,1:3])
 
@@ -452,6 +448,7 @@ RCircos.Multiple.Species.Core.Components(cyto.list,species.list, NULL, 5, 5)
 link.data[,1] <- paste(species.list[1], link.data[,1], sep="")
 
 link.data[,4] <- paste(species.list[2], link.data[,4], sep="")
+
 params <- RCircos.Get.Plot.Parameters()
 
 params$chrom.width<-0.4
