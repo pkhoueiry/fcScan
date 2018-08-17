@@ -25,7 +25,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (is.data.frame(x)) {
         if (is.null(names(c))) {
             stop("When input is data frame condition must be explicitly
-    defined")
+                 defined")
         }
         } else {
             if (length(c) != length(x))
@@ -42,29 +42,29 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
     if (!(s %in% c("+", "-", ".")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
-     and "."')
+             and "."')
 
     ##if not greedy and order is given
 
-        if(is.null(order) == FALSE){
-            ##checking same consistency of name in order and condition
-            for(i in 1:length(order)){
-                if(!(order[i] %in% names(c))){
-                    stop("Site names in order and condition not consistent")
-                }
-            }
-            if(greedy == FALSE){
-            if(length(order) > sum(c)) ##order has more sites than condition
-                stop("Not convenient order and condition")
+    if(is.null(order) == FALSE){
+        ##checking same consistency of name in order and condition
+        for(i in 1:length(order)){
+            if(!(order[i] %in% names(c))){
+                stop("Site names in order and condition not consistent")
             }
         }
+        if(greedy == FALSE){
+            if(length(order) > sum(c)) ##order has more sites than condition
+                stop("Not convenient order and condition")
+        }
+    }
 
 
     n = sum(c)
 
     res = array(data = NA, dim = c(nrow(x), ncol = 8))
     colnames(res) = c("chr", "start", "end", "size", "site", "strand",
-    "isCluster", "status")
+                      "isCluster", "status")
 
     ##getting sites found on the required chrom
     if (length(chr) > 0) {
@@ -90,7 +90,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                         df = subset(x, chr == unique_chr[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
-                        result = cluster_sites(df, w, c, overlap, n,
+                            result = cluster_sites(df, w, c, overlap, n,
                                                    res, s, greedy, order)
                         }
                     }
@@ -289,7 +289,7 @@ testCombn <- function(ls, c, order) {
         return(ans)
     } else{
         if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE)
-            {
+        {
             ans$logical = TRUE
             ans$status = "PASS"
             return(ans)
