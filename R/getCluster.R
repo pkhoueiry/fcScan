@@ -48,8 +48,10 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
         if(is.null(order) == FALSE){
             ##checking same consistency of name in order and condition
-            if(grepl(paste(order,collapse=";"),paste(names(c),collapse=";")) == FALSE){
-                stop("Site names in order and condition not consistent")
+            for(i in 1:length(order)){
+                if(!(order[i] %in% names(c))){
+                    stop("Site names in order and condition not consistent")
+                }
             }
             if(greedy == FALSE){
             if(length(order) > sum(c)) ##order has more sites than condition
