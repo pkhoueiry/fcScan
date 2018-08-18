@@ -73,7 +73,8 @@ found between detected clusters and other species.
 
 ## <a id="Packages Needed"></a> Packages Needed
 
-fcScan requires the following packages to be installed :
+fcScan requires the following packages to be installed for the 
+usage of getCluster :
 
     -parallel   
     -doParallel 
@@ -81,6 +82,18 @@ fcScan requires the following packages to be installed :
     -stats      
     -utils      
 
+mapCluster requires to have kent utilities downloaded.
+
+kent utilities can be downloaded from the following
+website [https://github.com/ENCODE-DCC/kentUtils]
+It is imprtant to note that not all operating systems
+support kent utils, and so mapCluster will
+not run on all operating systems.
+
+The main aim of fcScan is to scan the genome
+for clusters, and so mapCluster is an option 
+for users who have an opertaing system
+supporting kent Utils. 
 
 ## <a id="Install Packages"></a> Install Packages
 
@@ -89,6 +102,11 @@ fcScan requires the following packages to be installed :
     -install.packages("foreach")
     -install.packages("stats")
     -install.packages("utils")
+    
+Chain files can be downloaded from the following link [http://hgdownload.cse.ucsc.edu/downloads.html]
+
+Chrom.sizes file can be found at the following link:
+[ftp://hgdownload.soe.ucsc.edu/goldenPath/]
     
 ## <a id="Overview"></a> Overview
 
@@ -433,8 +451,8 @@ input.bed = mappedClusters[,5:8]
 mouse.bed = mappedClusters[,1:4]
 mouse.bed$Start = as.integer(mouse.bed$Start)
 mouse.bed$End = as.integer(mouse.bed$End)
-data(UCSC.Mouse.GRCm19.CytoBandIdeogram)
-data(UCSC.HG38.Human.CytoBandIdeogram)
+data(UCSC.Mouse.GRCm38.CytoBandIdeogram)
+data(UCSC.HG19.Human.CytoBandIdeogram)
 
 mouse.data <- mouse.bed
 human.data <- input.bed
@@ -445,7 +463,7 @@ species.list <- c("H", "M")
 
 link.data = link.data[-which(link.data$SeqNames ==""),]
 
-cyto.list <- list(UCSC.HG38.Human.CytoBandIdeogram,UCSC.Mouse.GRCm19.CytoBandIdeogram)
+cyto.list <- list(UCSC.HG19.Human.CytoBandIdeogram,UCSC.Mouse.GRCm38.CytoBandIdeogram)
 
 RCircos.Multiple.Species.Core.Components(cyto.list,species.list, NULL, 5, 5)
 
