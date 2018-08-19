@@ -278,7 +278,7 @@ testCombn <- function(ls, c, order) {
     for (key in names(c)) {
         if (sum((ls == key)) < c[key]) {
             ans$logical = FALSE
-            ans$status = "condFail"
+            ans$status = "combnFail"
             return(ans)
         }
     }
