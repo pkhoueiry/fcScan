@@ -12,7 +12,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                       s="." , n_cores=2, order=NULL) {
 
     start.time = Sys.time()
-
     cl <- makeCluster(n_cores)
     registerDoParallel(cl)
 
@@ -36,7 +35,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             }
             x = load_data(my_files = x, c = c)
     }
-
     if (w < 0)
         stop("Window size cannot be a negative number")
 
@@ -59,7 +57,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         }
     }
 
-
     n = sum(c)
 
     res = array(data = NA, dim = c(nrow(x), ncol = 8))
@@ -74,7 +71,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (s != ".") {
         x = subset(x, strand %in% s)
     }
-
     ##need to subset to keep only the sites required by the user
     x = subset(x, site %in% names(c))
     if (nrow(x) == 0) {
@@ -82,11 +78,10 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         stopCluster(cl)
         return(NULL)
     }
-
     unique_chr = unique(x$chr)
     final = foreach(parOut = 1:length(unique_chr) ,
                     .export = c("testCombn","cluster_sites"),
-                    .combine = rbind) %dopar% {
+                    .combine = rbind) %do% {
                         df = subset(x, chr == unique_chr[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
@@ -239,7 +234,14 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
             ls <- site[i:iEnd]
         }
         else {
+            print("start is")
+            print(start[i])
+            print("all are")
+            print(e[i:(i + n - 1)])
+            print("max is ")
+            print(max((e[i:(i + n - 1)])))
             end = max((e[i:(i + n - 1)]))
+
         }
         ## putative cluster is bigger than window
         if (greedy == FALSE) {
@@ -253,6 +255,9 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ## checking if required sites are present
         ans <- testCombn(ls, c, order)
         isCluster = ans$logical
+
+        print(paste0("start is", start[i]))
+        print(paste0("end is ",end))
 
         res[i, "chr"] <- as.character(df$chr[i])
         res[i, "start"] <- start[i]
