@@ -455,8 +455,8 @@ link.data <- data.frame(human.data[,1:3], mouse.data[,1:3])
 
 species.list <- c("H", "M")
 
-if(sum(link.data$SeqNames =="") != 0){ ##clusters which are not mapped
-link.data = link.data[-which(link.data$SeqNames ==""),]
+if(sum(link.data$mappedTName =="") != 0){ ##clusters which are not mapped
+link.data = link.data[-which(link.data$mappedTName ==""),]
 }
 
 cyto.list <- list(UCSC.HG19.Human.CytoBandIdeogram,UCSC.Mouse.GRCm38.CytoBandIdeogram)
