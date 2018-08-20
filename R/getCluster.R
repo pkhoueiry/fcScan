@@ -12,8 +12,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                       s="." , n_cores=2, order=NULL) {
 
     start.time = Sys.time()
-    cl <- makeCluster(n_cores)
-    registerDoParallel(cl)
 
     ##check arguments
     if (missing(x)) {
@@ -24,7 +22,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (is.data.frame(x)) {
         if (is.null(names(c))) {
             stop("When input is data frame condition must be explicitly
-                 defined")
+    defined")
         }
         } else {
             if (length(c) != length(x))
@@ -35,33 +33,35 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             }
             x = load_data(my_files = x, c = c)
     }
+
     if (w < 0)
         stop("Window size cannot be a negative number")
 
     if (!(s %in% c("+", "-", ".")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
-             and "."')
+     and "."')
 
     ##if not greedy and order is given
 
-    if(is.null(order) == FALSE){
-        ##checking same consistency of name in order and condition
-        for(i in 1:length(order)){
-            if(!(order[i] %in% names(c))){
-                stop("Site names in order and condition not consistent")
+        if(is.null(order) == FALSE){
+            ##checking same consistency of name in order and condition
+            for(i in 1:length(order)){
+                if(!(order[i] %in% names(c))){
+                    stop("Site names in order and condition not consistent")
+                }
             }
-        }
-        if(greedy == FALSE){
+            if(greedy == FALSE){
             if(length(order) > sum(c)) ##order has more sites than condition
                 stop("Not convenient order and condition")
+            }
         }
-    }
+
 
     n = sum(c)
 
     res = array(data = NA, dim = c(nrow(x), ncol = 8))
     colnames(res) = c("chr", "start", "end", "size", "site", "strand",
-                      "isCluster", "status")
+    "isCluster", "status")
 
     ##getting sites found on the required chrom
     if (length(chr) > 0) {
@@ -71,6 +71,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (s != ".") {
         x = subset(x, strand %in% s)
     }
+
     ##need to subset to keep only the sites required by the user
     x = subset(x, site %in% names(c))
     if (nrow(x) == 0) {
@@ -78,14 +79,19 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         stopCluster(cl)
         return(NULL)
     }
+
     unique_chr = unique(x$chr)
+
+    cl <- makeCluster(n_cores)
+    registerDoParallel(cl)
+
     final = foreach(parOut = 1:length(unique_chr) ,
                     .export = c("testCombn","cluster_sites"),
-                    .combine = rbind) %do% {
+                    .combine = rbind) %dopar% {
                         df = subset(x, chr == unique_chr[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
-                            result = cluster_sites(df, w, c, overlap, n,
+                        result = cluster_sites(df, w, c, overlap, n,
                                                    res, s, greedy, order)
                         }
                     }
@@ -148,7 +154,7 @@ load_bed_files <- function(bed_files, c, x) {
     data_bed <- lapply(bed_files, read.table, stringsAsFactors = FALSE)
 
     names(data_bed) <- bed_files
-    for (i in 1:length(data_bed)) {
+    for (i in seq_along(data_bed)) {
         if (ncol(data_bed[[i]]) >= 6) {
             ##extrat col(1,2,3,6) has strand col
             data_bed[[i]] = data_bed[[i]][, c(1, 2, 3, 4, 6)]
@@ -182,7 +188,7 @@ load_vcf_files <- function(vcf_files, c, x) {
     data_vcf <- lapply(vcf_files, read.table, stringsAsFactors = FALSE)
     names(data_vcf) <- vcf_files
 
-    for (i in 1:length(data_vcf)) {
+    for (i in seq_along(data_vcf)) {
         data_vcf[[i]] = data_vcf[[i]][, c(1, 2, 3, 4, 5)]
         colnames(data_vcf[[i]]) = c("chr", "end", "name", "ref", "alt")
         data_vcf[[i]]$start = (data_vcf[[i]]$end) - 1
@@ -235,7 +241,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         }
         else {
             end = max((e[i:(i + n - 1)]))
-
         }
         ## putative cluster is bigger than window
         if (greedy == FALSE) {
@@ -249,7 +254,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ## checking if required sites are present
         ans <- testCombn(ls, c, order)
         isCluster = ans$logical
-
 
         res[i, "chr"] <- as.character(df$chr[i])
         res[i, "start"] <- start[i]
@@ -283,19 +287,17 @@ testCombn <- function(ls, c, order) {
     if(is.null(order)){ ##order doesnt matter
         ans$logical = TRUE
         ans$status = "PASS"
-        return(ans)
     } else{
         if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE)
-        {
+            {
             ans$logical = TRUE
             ans$status = "PASS"
-            return(ans)
         }else{
             ans$logical = FALSE
             ans$status = "orderFail"
-            return(ans)
         }
     }
+    return(ans)
 }
 
 detect_vcf_end <- function(x) {

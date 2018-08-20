@@ -22,8 +22,8 @@ knitr::opts_chunk$set(
 
 ## Table of Contents
 * [Introduction](#introduction) 
-* [Install Packages](#Install Packages) 
 * [Packages Needed](#Packages Needed)  
+* [Install Packages](#Install Packages) 
 * [Overview](#Overview)
 * [Input data as BED/VCF files or dataframe](#Input data as BED/VCF files or dataframe)  
 * [Setting the clustering condition](#Setting the clustering condition)  
@@ -49,9 +49,9 @@ associated with disease initiation and progression.
 fcScan is a package designed to detect clusters of genomic features based on 
 user defined search criteria. Such criteria include:  
     
-	-A list of BED/VCF files or a dataframe of input data __
-    -The required window size of the clusters to identify __
-	-The combination of features required from input files or dataframe __
+	-A list of BED/VCF files or a dataframe of input data
+    -The required window size of the clusters to identify
+	-The combination of features required from input files or dataframe
 	-The order of features required within identified clusters
 	-The distance required between each cluster   
     -On which strand to build the clusters   
@@ -89,7 +89,7 @@ features.
     install.packages("doParallel")
     install.packages("foreach")
     install.packages("stats")
-	install.packages("utils")
+    install.packages("utils")
     
 Chain files can be downloaded from  [http://hgdownload.cse.ucsc.edu/downloads.html]
 
@@ -124,14 +124,14 @@ combination of sites required. (Default is **NULL**).
 
 The output will be a data frame with fields containing the:
 
-`chr`: The chromosome on which a cluster is found
-`start`: The start of the cluster
-`end`: The end of the cluster
-`size`: The size of the cluster
-`sites`: The combination of sites that defines the cluster
-`strand`: The strand of the cluster, if any
-`isCluster`: A logical indicating if the cluster is TRUE or FALSE
-`reason`: Describes the reason behind the rejection of a cluster 
+* **chr**: The chromosome on which a cluster is found
+* **start**: The start of the cluster
+* **end**: The end of the cluster
+* **size**: The size of the cluster
+* **sites**: The combination of sites that defines the cluster
+* **strand**: The strand of the cluster, if any
+* **isCluster**: A logical indicating if the cluster is TRUE or FALSE
+* **reason**: Describes the reason behind the rejection of a cluster 
 
 The algorithm returns all clusters containing the correct count of
 sites/features. If the combination, overlap, and order options are satisfied,
@@ -166,6 +166,14 @@ Alternatively, `getCluster` accepts a data frame as input. In this case,
 this data frame should have 5 columns containing the following.
     
 `chr start end strand  site`
+
+Columns of the data frame are:
+
+* **chr** : Contains the chromosome name
+* **start**: Contains start coordinates
+* **end**: Contains end coordinates
+* **strand**: Contains strand relative to each site
+* **site** : Contains the family name relative to genomic site
 
 The chr, start and end columns are the relative position of each feature/site.
 The site column contains the ID of the site and will be used for clustering.

@@ -43,8 +43,8 @@ mapCluster <- function(x, kent = NULL, chrom.sizes , chain) {
     ##mappedTName mappedTStart mappedTEnd mappedStrand mappedAligned
     ##srcTName srcTStart srcTEnd srcStrand
      results = results[,c(21,22,23,24,5,6,7,8)]
-     colnames(results) = c("SeqNames","Start","End","Strand",
-     "srcTName","srcTStart","srcTEnd","srcStrand")
+     colnames(results) = c("targetChr","targetStart","targetEnd","targetStrand",
+     "srcChr","srcStart","srcEnd","srcStrand")
      #results[is.na(results)] <- "--"
      return(results)
 }
