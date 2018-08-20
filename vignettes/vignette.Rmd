@@ -32,7 +32,6 @@ knitr::opts_chunk$set(
 * [Example on Mapping](#Example on Mapping)  
 * [Parallelism](#Parallelism)  
 * [Plotting Mapped Clusters using Rcircos](#Plotting Mapped Clusters using Rcircos)  
-* [Result](#Result)
 * [Session Info](#Session Info)
 
 
@@ -410,7 +409,7 @@ knitr::kable(df)
 The result of `mapClusters` is a data frame which contains 207 observations and 
 8 variables. The above example is only a small sample of the results.
 
-In the example above, we mapped the clusters from hg38 to Mm10.
+In the example above, we mapped the clusters from hg19 to Mm10.
 
 *SeqNames Start End Strand* are the representative information of the mapped
 regions in the mice species.
@@ -479,9 +478,6 @@ legend(1, 2, legend=c("Right: Human","Left:  Mouse"), cex=0.8)
 dev.off()
 
 ```
-
-
-## <a id = "Result"></a> Result
 
 ```{r pressure, echo=FALSE, fig.cap="RCircos of Mapped Clusters", out.width = '100%'}
 knitr::include_graphics("./HumanVsMouse.png")
