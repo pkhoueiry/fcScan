@@ -7,12 +7,12 @@ date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 package: fcScan
 vignette: >
-  %\VignetteEngine{knitr::rmarkdown}    
+  %\VignetteEngine{knitr::rmarkdown}  
   %\VignetteIndexEntry{fcScan}  
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
+```{r, setup, include = FALSE}
 knitr::opts_chunk$set(
     collapse = TRUE,
     comment = "#>"
@@ -24,14 +24,13 @@ knitr::opts_chunk$set(
 * [Introduction](#introduction) 
 * [Install Packages](#Install Packages) 
 * [Packages Needed](#Packages Needed)  
-* [Overview](#Overview) 
-* [Parallelism](#Parallelism)  
-* [BED and VCF Files](#BED and VCF Files)  
-* [Data frame or files](#Data frame or files)  
+* [Overview](#Overview)
+* [Input data as BED/VCF files or dataframe](#Input data as BED/VCF files or dataframe)  
 * [Setting the clustering condition](#Setting the clustering condition)  
 * [Greedy vs Non-Greedy ](#Greedy vs Non-Greedy)  
 * [Example on Clustering](#Example on Clustering)  
 * [Example on Mapping](#Example on Mapping)  
+* [Parallelism](#Parallelism)  
 * [Plotting Mapped Clusters using Rcircos](#Plotting Mapped Clusters using Rcircos)  
 * [Result](#Result)
 * [Session Info](#Session Info)
@@ -39,151 +38,139 @@ knitr::opts_chunk$set(
 
 ## <a id="introduction"></a> Introduction
 
-The eukaryotic system of expression relies on transcription factors (TFs) 
-which play an important role in activating and deactivating genes. TFs are not 
-solely responsible for gene regulation; eukaryotes also rely on cell signaling, 
-RNA splicing, siRNA control mechanisms, and chromatin modifications. 
+Biological information encoded in the DNA sequene is often organized into
+independent modules or clusters. For instance, the eukaryotic system of
+expression relies on combinations of homotypic or heterotypic transcription
+factors (TFs) which play an important role in activating and repressing
+target genes.
 
-Transcription factors play an important role in activating and deactivating 
-genes and in turn this process is determinant for the expression of proteins. 
-Any mutation in these regions creates hot spots for identifiying disorder 
-causing agents. 
+In disease state, genomics regions with increased mutational hotspots are
+associated with disease initiation and progression.
 
-Detecting how clusters of these transciption factors are clustered within the 
-genome also gives insights on certain biological processes they manage.
-
-fcScan is a package which is designed to detect clusters of sites based on 
-user defined parameters. It allows
-the user to choose the following:  
+fcScan is a package designed to detect clusters of genomic features based on 
+user defined search criteria. Such criteria include:  
     
-    -The required window size of the cluster
+	-A list of BED/VCF files or a dataframe of input data __
+    -The required window size of the clusters to identify __
+	-The combination of features required from input files or dataframe __
+	-The order of features required within identified clusters
+	-The distance required between each cluster   
+    -On which strand to build the clusters   
+    -On which chromosome to build the clusters   
 
-    -What genomic data the cluster should include   
+Additionally, fcScan package contains a wrapper function around
+*pslMap* from KentUtilsallowing the user to detect orthologous regions
+from identified clusters. 
 
-    -On which strand to build the cluster   
-
-    -On which chromosome to build the cluster   
-
-    -The distance required between each cluster   
-
-    -Whether data other than the required is allowed
-
-In addition to that, this package allows users to detect orthologous regions 
-found between detected clusters and other species.
 
 ## <a id="Packages Needed"></a> Packages Needed
 
 fcScan requires the following packages to be installed for the 
 usage of getCluster :
 
-    -parallel   
-    -doParallel 
-    -foreach    
-    -stats      
-    -utils      
+    parallel
+    doParallel
+    foreach
+    stats
+    utils
 
-mapCluster requires to have kent utilities downloaded.
+mapCluster requires to have "pslMap" and "bedToPsl" from kent utilities
 
 kent utilities can be downloaded from the following
 website [https://github.com/ENCODE-DCC/kentUtils]
-It is imprtant to note that not all operating systems
-support kent utils, and so mapCluster will
-not run on all operating systems.
-
-The main aim of fcScan is to scan the genome
-for clusters, and so mapCluster is an option 
-for users who have an opertaing system
-supporting kent Utils. 
+It is impprtant to note that not all operating systems
+support kent utils, and so the mapCluster functionality of fcScan will
+not run on all operating systems. This does not affect the main function
+in fcScan "getCluster" that aims at identifying clusters of genomic
+features.
 
 ## <a id="Install Packages"></a> Install Packages
 
-    -install.packages("parallel")
-    -install.packages("doParallel")
-    -install.packages("foreach")
-    -install.packages("stats")
-    -install.packages("utils")
+    install.packages("parallel")
+    install.packages("doParallel")
+    install.packages("foreach")
+    install.packages("stats")
+	install.packages("utils")
     
-Chain files can be downloaded from the following link [http://hgdownload.cse.ucsc.edu/downloads.html]
+Chain files can be downloaded from  [http://hgdownload.cse.ucsc.edu/downloads.html]
 
-Chrom.sizes file can be found at the following link:
-[ftp://hgdownload.soe.ucsc.edu/goldenPath/]
+Chrom.sizes file can be found at [http://hgdownload.soe.ucsc.edu/goldenPath/**/bigZips]
+
+"**" Should be replaced by the species(ex. hg19) 
     
 ## <a id="Overview"></a> Overview
 
-Clustering is done through the `getCluster` function.
-This function is responsible for clustering based on the arguments given by 
-the user. 
-These clusters will be built on the strand and chromosome specified by the 
-ciuser using `chr = "chrom1" str = "+"`, and the size of these 
-clusters will not exceed the given window size.  
-The distance between each cluster will depend on the value given by `overlap`. 
+**Clustering** is done using the `getCluster` function based on user
+defined arguments.
 
-If the value of overlap is a positive number then this signifies that the 
-clusters should be seperated by this value or more, and if the value 
-is a negative number then this means that the clusters can be overlapping by 
-this distance or less.  
-If `greedy = FALSE`, clusters will be labelled as **TRUE** if they contain 
-the same number of sites and type as the user requested in `c`.   
-If `greedy = TRUE`, clusters will be labelled as **TRUE** if they contain 
-the same number of sites and type as the user requested in `c` or more.
+By default, the clusters will be built on both strands and all chromosomes
+unless specified by the user using the `chr` and `str` arguments to limit the
+search on a specific chromosome or strand.
 
-An additional parameter is `order` which by default is **NULL**. This
-parameter allows the user to cluster sites in a specific order, therefore
-the clusters that will be labelled **TRUE** should have the same order
-as given in `order`. In case this parameter is **NULL** then the order
-of sites in the cluster will not matter.
-The output will be a data frame which has 
-`chr    start   end size    site    strand  isCluster   reason`
+The gap/overlap between adjacent clusters can be controled using the `overlap`
+option.
+When positive, adjacent clusters will be separated by a minimum of the
+given value.
+When negative, adjacent clusers will be allowed to overlap by the a maximum
+of the given value
+(Default is 0).
 
-An important note is that if the user is using `greedy = FALSE` and `order`
-contains values more than the condition parameter then an error will be raised
-since the user is requesting a cluster with an order containing more sites
-than the clustering condition.
+The `greedy` option allows the user to search for clusters with the required
+number and only the required number of features (`greedy = FALSE`).
+When set to `TRUE`, larger clusters will be returned as long as they contain 
+the combination of sites requested in `c` or more (Default is TRUE).
 
-However, if `greedy = TRUE` then using `order` with more values than the 
+The `order` option allows the user to define the specific order for the
+combination of sites required. (Default is **NULL**).
+
+The output will be a data frame with fields containing the:
+
+`chr`: The chromosome on which a cluster is found
+`start`: The start of the cluster
+`end`: The end of the cluster
+`size`: The size of the cluster
+`sites`: The combination of sites that defines the cluster
+`strand`: The strand of the cluster, if any
+`isCluster`: A logical indicating if the cluster is TRUE or FALSE
+`reason`: Describes the reason behind the rejection of a cluster 
+
+The algorithm returns all clusters containing the correct count of
+sites/features. If the combination, overlap, and order options are satisfied,
+the cluters is considered a `TRUE` cluster. 
+
+NOTE: If the user is using `greedy = FALSE` and `order` contains values more
+than  in the condition parameter,  an error will be raised.
+However, if `greedy = TRUE`, then using `order** with more values than the 
 condition paramerter is allowed since a greedy cluster may contain more 
 sites than the required condition.
 
-**isCluster** will contains the TRUE or FALSE labels depending if the found
-cluster satisfied the required conditions.
-**reason** describes the reason why a certain cluster was labelled as FASLE.
+The `mapCluster` function is a wrapper around kent utility pslMap, mostly 
+adapted for identifying orthologous regions for distantly related species.
+It is required to have `pslMap` and `bedToPsl` from KentUtils installed in
+order to us `mapCluster`.
+The path to kent utils can be specified as argument unless they are in
+the system path.
+Additionally, this function requires a chain file for both `species` that
+the user wants to map
 
-Mapping is done through `mapCluster`, this function is a wrapper for kent 
-utilities. It is required to have kent utils inorder to user `mapCluster`, 
-and the path to kent utils should be either given in the argument or set
-in the system path.
 
-## <a id="Parallelism"></a> Parallelism
+## <a id="Input data as BED/VCF files or dataframe"></a> Input data as BED/VCF files or dataframe
 
-This package uses parallelism in the case the user wants to cluster on specific
-chromosomes. Each chromosome will be sent to a core to cluster on.
-For this we user, `foreach %dopar%`. It is important to note that by default the
-number of cores is set to 2 cores, and the function will not go in parallel
-in case the user wants to cluster on one chromosome only.
-
-## <a id="BED and VCF Files"></a> BED and VCF Files
-
-`getCluster` can accept BED and VCF files. BED-12, BED-6, BED-4, and Bed-3 
-file are accepted.
-Compressed and uncompressed vcf files are also accepted.
-
-There is no limit on the number of files this function takes aslong as for 
-each file entered there
-is a relative requirement on it given to the condition argument `c`.
+`getCluster` takes BED and VCF files (compressed or not). BED-12, BED-6, BED-4,
+and Bed-3 file formats are valid.
+There is no limit on the number of files the user can define.
 
 >`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, str = "+", chr = "chr9")`
 
-## <a id = "Data frame or files"></a>  Data frame or files
 
-Other than BED and VCF files, a data frame can be accepted.
-This data frame should have 5 columns containing the following:
+Alternatively, `getCluster` accepts a data frame as input. In this case,
+this data frame should have 5 columns containing the following.
     
-> chr start   end strand  site
+`chr start end strand  site`
 
-The chr start and end columns are the relative position of each site.
-The site column should contain the family to which this site belongs to.
-start and end columns need to be numeric or integer while the rest need 
-to be character.
+The chr, start and end columns are the relative position of each feature/site.
+The site column contains the ID of the site and will be used for clustering.
+start and end columns are numeric while the rest are characters.
 
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
@@ -195,14 +182,12 @@ df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
 knitr::kable(df)
 ```
 
-
 ## <a id = "Setting the clustering condition"></a> Setting the clustering condition
 
 The clustering condition `c` defines the number and type of genomic data to 
-be found in each cluster.
+search for in each cluster.
 `c = c("TATA" = 1, "GATA" = 2)`  
-This defines the cluster to have 3 sites, 1 of them should be a *TATA* binding 
-site, and the other 2 should be a *GATA* biding site.
+This searches for clusters with 3 sites, One *TATA* and two  *GATA*.
 
 Another way of writing the condition is the following : 
 `x = ("TATA.bed","GATA.bed"), c = c(1,2)`  
@@ -211,7 +196,7 @@ looking for clusters made from 1 TATA site and 2 GATA sites. The numbers
 given in the condition are relative to the order of the files given. 
 
 In case a data frame is given instead of files, the user needs to **explicitly** 
-define the site name along with the number relative to each site. 
+defines the site name along with the number relative to each site. 
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.
 
 ## <a id = "Greedy vs Non-Greedy"></a> Greedy vs Non-Greedy 
@@ -292,15 +277,15 @@ knitr::kable(df)
 
 
 
-In this example `getCluster` will search for clusters that contain a
+In the example below `getCluster` will search for clusters that contain a
 minimum of 1 NANOG_known1 site and 2 TATA_known2 sites, found within 1000bp,
-and the clusters should be seperated by a maximum of 5 overlapping base pairs.
-Since `chr = chr9` clusters will only be built on chromosome 9 and `str = "+"`
-and so clusters will only include sites found on the positive strand. 
+and adjacent clusters should be seperated by a maximum of 5 overlapping base
+pairs.
+Since `chr` has the value `chr9` and `str` has the value `+`, clusters will
+only be built on chromosome 9 only and for sites defined on the positive strand
+exclusively.
 
 >`clusters = getCluster(x , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", str = "+")`
-
-
 
 The results are stored in a data frame named clusters. *clusters* contains 
 1606 observations with 8 variables
@@ -360,17 +345,16 @@ knitr::kable(df)
 ## <a id = "Example on Mapping"></a> Example on Mapping
 
 This package includes a function that can map orthologous regions 
-between species using Kent Utilities. 
+between species using pslMap from kentUtils. 
 
-`mapCluster( x , kent, chrom.sizes, chain)`
+`mapCluster(x , kent, chrom.sizes, chain)`
 *x* is a data frame that contains the mapped clusters, the rest of the
 arguments are the path to kentUtils, to chrom.sizes file and to chain
 file being used. 
 
-By default, the path to kent is set to NULL since it is assumed that the
-path to kent in set in the system path of the user.
-In case this is not the case, then the user will need to give the relative
-path to kent utilities.
+By default, the path to kent is set to NULL assuming path to kentUtils is in the
+system path.
+Otherwise, user the path needs to be specified in the option **kent**.
 
 `mapClusters` takes a Bed-6 format, and so must have the following columns:
     
@@ -439,7 +423,14 @@ In the 10th row, the *SeqNames* is empty, and the *Start* and *End* region are
 represented by **--**. 
 
 This indicates that for this cluster, there was no orthologous region detected
-in Mm10.
+in mm10.
+
+## <a id="Parallelism"></a> Parallelism
+
+This package uses parallelism by chromosome. One core will be allocated
+per chromosome.
+The number of cores is set to 2 by default.
+
 
 ## <a id = "Plotting Mapped Clusters using Rcircos"></a> Plotting Mapped Clusters using Rcircos
 

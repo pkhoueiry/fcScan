@@ -234,12 +234,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
             ls <- site[i:iEnd]
         }
         else {
-            print("start is")
-            print(start[i])
-            print("all are")
-            print(e[i:(i + n - 1)])
-            print("max is ")
-            print(max((e[i:(i + n - 1)])))
             end = max((e[i:(i + n - 1)]))
 
         }
@@ -256,8 +250,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ans <- testCombn(ls, c, order)
         isCluster = ans$logical
 
-        print(paste0("start is", start[i]))
-        print(paste0("end is ",end))
 
         res[i, "chr"] <- as.character(df$chr[i])
         res[i, "start"] <- start[i]
