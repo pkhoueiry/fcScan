@@ -167,7 +167,7 @@ define the site name along with the number relative to each site.
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.  
 `x = dataFrame_of_sites, c = c("TATA" = 1, "GATA" = 2)`
 
-######Chromosome(chr) and Strand(s)
+######Chromosome (chr) and Strand (s)
 By default, the clusters will be built on both strands and all chromosomes
 unless specified by the user using the `chr` and `s` arguments to limit the
 search on a specific chromosome or strand.
@@ -184,7 +184,7 @@ The values allowd for `s` are the following :
 * **.** : Clusters are not strand specific  
 (Default of `s` is **.**)
 
-###### Overlap(overlap)
+###### Overlap (overlap)
 The gap/overlap between adjacent clusters can be controled using the `overlap`
 option.
 When `overlap` is positive, adjacent clusters will be separated by a minimum
@@ -193,7 +193,7 @@ When negative, adjacent clusers will be allowed to overlap by the a maximum
 of the given value.  
 (Default is **0**)
 
-###### Greedy vs Non-Greedy
+###### Greedy vs Non-Greedy (greedy)
 `greedy` allows the user to control the number of genomic features found 
 in clusters.
 
@@ -209,12 +209,12 @@ genomic data or more. The rest will be labelled as *FALSE*.
 (Default is **TRUE**)
 
 
-###### Order(order)
+###### Order (order)
 The `order` option allows the user to define the specific order for the
 combination of sites required.  
 (Default is **NULL**)
 
-###### Number of cores(n_cores)
+###### Number of cores (n_cores)
 This parameter allows the user to control the number of cores used by 
 `getCluster` when using parallel.  
 (Default is **2**)
@@ -253,12 +253,12 @@ the system path.
 Additionally, this function requires a chain file for species
 the user wants to map.
 
-###### Input data(x)
+###### Input data (x)
 
 The input for mapCluster is a dataframe that follows a BED-6 format.  
             *chr   start   end name    score   strand *
 
-###### Path to kent utils(kent)
+###### Path to kent utils (kent)
 The path to kent utils is passed using this parameter.
 In case kent utils is in the system path then no need to for the path.  
 (Default is **NULL**)
