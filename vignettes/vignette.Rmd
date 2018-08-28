@@ -184,7 +184,7 @@ The values allowd for `s` are the following :
 * **.** : Clusters are not strand specific  
 (Default of `s` is **.**)
 
-###### Overlap(overlap)
+###### Overlap (overlap)
 The gap/overlap between adjacent clusters can be controled using the `overlap`
 option.
 When `overlap` is positive, adjacent clusters will be separated by a minimum
@@ -253,12 +253,12 @@ the system path.
 Additionally, this function requires a chain file for species
 the user wants to map.
 
-###### Input data(x)
+###### Input data (x)
 
 The input for mapCluster is a dataframe that follows a BED-6 format.  
             *chr   start   end name    score   strand *
 
-###### Path to kent utils(kent)
+###### Path to kent utils (kent)
 The path to kent utils is passed using this parameter.
 In case kent utils is in the system path then no need to for the path.  
 (Default is **NULL**)
