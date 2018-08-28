@@ -38,12 +38,14 @@ conditions.
     \item{s}{character; Strand to cluster on. Can be "+", "-" or
                 ".". The default is set to "."}
 
-    \item{n_cores}{numeric; The number of cores to be used in parallel.
-                    By default it is set to 2 cores}
-
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contains. By default it is
                         set to NULL}
+
+    \item{n_cores}{numeric; The number of cores to be used in parallel.
+                    By default it is set to 2 cores}
+
+
 
 }
 
@@ -95,5 +97,7 @@ The returned value is a data frame that contains the clusters found.
 
 \author{
 Pierre Khoueiry
+
+
 Ghiwa Khalil
 }
