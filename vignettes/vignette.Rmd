@@ -107,7 +107,7 @@ fcScan contains two main function, `getCluster` and `mapCluster`.
 
 `getCluster` is responsible for building clusters based on 
 user defined parameters, while detecting orthologous 
-regions is done using the `mapCluster`.
+regions is done using `mapCluster`.
 
 
 ## <a id="Input arguments for getCluster"></a> Input arguments for getCluster
@@ -124,8 +124,6 @@ There is no limit on the number of files the user can define.
 
 Alternatively, `getCluster` accepts a data frame as input. In this case,
 this data frame should have 5 columns containing the following.
-    
-**chr, start, end, strand, and  site**
 
 * **chr** : Contains the chromosome name
 * **start**: Contains start coordinates
@@ -143,15 +141,16 @@ df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
 knitr::kable(df)
 ```
 
-The chr, start and end columns are the relative position of each feature/site.
-The site column contains the ID of the site and will be used for clustering.
-start and end columns are numeric while the rest are characters.
+The *chr*, *start* and *end* columns are the relative position of each
+feature/site.
+The *site* column contains the ID of the site and will be used for clustering.
+*start* and *end* columns are numeric while the rest are characters.
 
-###### Window Size(w)
-Window size is set using `w`, and this parameter defines the sizes of the
+###### Window Size (w)
+Window size is set using `w`, and this parameter defines the size of the
 clusters.
 
-###### Condition(c)
+###### Condition (c)
 The clustering condition `c` defines the number and type of genomic data to 
 search for in each cluster
 `c = c("TATA" = 1, "GATA" = 2)`  
@@ -168,16 +167,15 @@ define the site name along with the number relative to each site.
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.  
 `x = dataFrame_of_sites, c = c("TATA" = 1, "GATA" = 2)`
 
-###### Chromosome(chr) and Strand(s)
+######Chromosome(chr) and Strand(s)
 By default, the clusters will be built on both strands and all chromosomes
 unless specified by the user using the `chr` and `s` arguments to limit the
 search on a specific chromosome or strand.
 
 Users can choose to cluster on one specific chromosome `(chr = "chr1")`, or
 on more than one chromosome `(chr = c("chr1","chr3","chr4"))`  
-(Default of `chr` is **NULL**) meaning that clustering on all chromosomes will be
-performed
-
+(Default of `chr` is **NULL**) meaning that clustering on all chromosomes 
+will be performed.
 
 The values allowd for `s` are the following : 
 
@@ -250,7 +248,7 @@ sites than the required condition.
 adapted for identifying orthologous regions for distantly related species.
 It is required to have `pslMap` and `bedToPsl` from KentUtils installed in
 order to use `mapCluster`.
-The path to kent utils can be specified as argument unless they are in
+The path to kent utils can be given as arguments unless they are in
 the system path.
 Additionally, this function requires a chain file for species
 the user wants to map.
@@ -298,7 +296,8 @@ In this example, `getCluster` was performed on the NANOG_known1 motif
 and TATA_known2 motif.
 
 *motif.txt* is a large file so it would be more efficient to handle
-it from the terminal using bash or any other alternative to extract the required sites.
+it from the terminal  using bash or any other alternative to extract the
+required sites.
 
 
 To get the sites for each motif :
@@ -309,8 +308,8 @@ To get the sites for each motif :
 
 Read each file into R
 
-> `NANOG = read.table("/Path/to/file/NANOG_known1.txt", stringsAsFactors = FALSE)`  
-> `TATA = read.table("/Path/to/file/TATA_known2.txt", stringsAsFactors = FALSE)`
+> `NANOG = read.table("/home/gk39/tmp/NANOG_known1.txt", stringsAsFactors = FALSE)`  
+> `TATA = read.table("/home/gk39/tmp/TATA_known2.txt", stringsAsFactors = FALSE)`
 
 Rearrange the columns to have the required data frame
 
@@ -319,7 +318,8 @@ Rearrange the columns to have the required data frame
 > `head(TATA)`
 
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"), 
+df <- data.frame(chr =  c("chr1", "chr1", "chr1", "chr1", "chr1", 
+                            "chr1"), 
                  start = c(25705L, 65916L, 119982L, 167008L, 266303L, 343330L), 
                  end = c(25719L, 65930L, 119996L, 167022L, 266317L, 343344L), 
                  strand = c("+", "-", "-", "+", "-", "+"),
@@ -331,7 +331,6 @@ knitr::kable(df)
 ```
 
 >`head(NANOG)`
-
 
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"), 
@@ -350,40 +349,45 @@ knitr::kable(df)
 
 
 In the example below `getCluster` will search for clusters that contain a
-minimum of 1 NANOG_known1 site and 2 TATA_known2 sites (since greedy is set to TRUE by default),
-found within 1000bp, and adjacent clusters should be seperated by a maximum of 5 overlapping base
+minimum of 1 NANOG_known1 site and 2 TATA_known2 sites, found within 1000bp
+(since greedy is set to TRUE by default),
+and adjacent clusters should be seperated by a maximum of 5 overlapping base
 pairs.
-Since `chr` has the value `chr9` and `str` has the value `+`, clusters will
+Since `chr` has the value `chr9` and `s` has the value `+`, clusters will
 only be built on chromosome 9 only and for sites defined on the positive strand
 exclusively.
 
 >`clusters = getCluster(x , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", s = "+")`
 
 The results are stored in a data frame named clusters. *clusters* contains 
-1606 observations with 8 variables
+1606 observations with 10 variables
 
 
 >`head(clusters)`
 
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
-                 start = c("25818", "165838", "202789", "253853", "361625", 
-                           "387687"), 
-                 end = c("25832", "165852", "202800", "253867", "361639",
-                         "387701"), 
+                 start = c(25818, 165838, 202789, 253853, 361625, 
+                           387687), 
+                 end = c(25832, 165852, 202800, 253867, 361639,
+                         387701), 
                  clusterSize = c("14", "14", "11", "14", "14", "14"), 
                  site = c("TATA_known2", "TATA_known2", "NANOG_known1", 
                           "TATA_known2", "TATA_known2", "TATA_known2"), 
                  strand = c("+", "+", "+", "+", "+", "+"), 
                  isCluster = c("FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-                               "FALSE"), 
-                 name = c("c1", "c2", "c3", "c4", "c5", "c6"))
+                               "FALSE"),
+                  status = c("combnFail", "combnFail", "combnFail", 
+                    "combnFail", "combnFail", "combnFail"),
+                 id = c("c1", "c2", "c3", "c4", "c5", "c6"),
+                    score = c(1, 1, 1, 1, 1, 1))
 
 knitr::kable(df)
 ```
 
 The resulting data frame will contain the *TRUE* and *FALSE* labelled 
-clusters. To get only the cluster labelled by *TRUE* We can subset by the following:
+clusters. To get only the cluster labelled by *TRUE*
+We can subset by the following:
     
 > `clusters_TRUE = subset(clusters, isCluster)`  
 > `head(clusters_TRUE)`
@@ -391,10 +395,10 @@ clusters. To get only the cluster labelled by *TRUE* We can subset by the follow
 
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
-                 start = c("5831141", "9319579", "16533736", "21748099",
-                           "23403001", "23714517"), 
-                 end = c("5846962", "9331595", "16549756", "21753346",
-                         "23415107", "23728984"), 
+                 start = c(5831141, 9319579, 16533736, 21748099,
+                           23403001, 23714517), 
+                 end = c(5846962, 9331595, 16549756, 21753346,
+                         23415107, 23728984), 
                  clusterSize = c("15821", "12016", "16020", "5247",
                                  "12106", "14467"), 
                  site = c("TATA_known2,TATA_known2,NANOG_known1",
@@ -403,14 +407,16 @@ df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"),
                           "TATA_known2,NANOG_known1,TATA_known2",
                           "NANOG_known1,TATA_known2,TATA_known2", 
                           "TATA_known2,NANOG_known1,TATA_known2"), 
-                 strand = c("+", "+", "+", "+", "+", "+"), 
-                 isCluster = c("TRUE", "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"), 
-                 name = c("c94", "c138", "c253", "c331", "c347", "c354"))
+                 strand = c("+", "+", "+", "+", "+", "+"),
+                isCluster = c("TRUE", "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"), 
+                 status = c("PASS", "PASS","PASS", "PASS", "PASS", "PASS"),
+                 id = c("c94", "c138", "c253", "c331", "c347", "c354"),
+                 score = c(1, 1, 1, 1, 1, 1))
 
 knitr::kable(df)
 ```
 
-*clusters_TRUE* contains 20 observations with 8 variables.
+*clusters_TRUE* contains 20 observations with 10 variables.
 
 
 ## <a id = "Example on Mapping"></a> Example on Mapping
@@ -420,26 +426,29 @@ Mapping will be done using the output of `getCluster`.
 To map the clusters which satisfied all the user defined conditions, and thus 
 are labelled *TRUE*.
 
-> `clusters_TRUE = clusters_TRUE[,c("chr", "start", "end", "id", "score", "strand")]`  
-> `mapCluster( clusters_TRUE , chrom.sizes = "hg19.chrom.sizes", chain = "hg19ToMm10.over.chain")`
+> `clusters_TRUE = clusters_TRUE[,c("chr", "start", "end", "id", "score", "strand")]`
+> `mappedClusters = mapCluster( clusters_TRUE , chrom.sizes = "hg19.chrom.sizes", chain = "hg19ToMm10.over.chain")`
+
+The result of `mapClusters` is a data frame which contains 20 observations and 
+8 variables.
 
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(SeqNames = c("chr19", "chr4", "chr4", "chr4", 
+df <- data.frame(mappedTName = c("chr19", "chr4", "chr4", "chr4", 
                               "chr4", "chr4", "chr4", "chr4",
                               "chr4", "chr4", "chr4", "chr4", 
                               "chr4", "chr13", "chr13", "chr13",
                               "chr4", "chr4", "chr4", "chr2"
 ), 
-Start = c(29646385L, 76914893L, 84373653L, 89096005L, 90906555L, 
+mappedTStart = c(29646385L, 76914893L, 84373653L, 89096005L, 90906555L, 
           91272473L, 92895457L, 35596995L, 36196127L, 36932006L, 39138272L, 
           71162604L, 71231574L, 51843935L, 52807767L, 52864104L, 55687810L, 
           64208514L, 68827355L, 28663311L), 
-End = c(29664014L, 76930788L, 
+ mappedTEnd = c(29664014L, 76930788L, 
     84386597L, 89099760L, 90918616L, 91279251L, 92912899L, 35625610L, 
     36211595L, 36949651L, 39159397L, 71167158L, 71260811L, 51860444L, 
     52818892L, 52879722L, 55701839L, 64238113L, 68850614L, 28670470L
           ), 
-Strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+", 
+mappedStrand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+", 
            "+", "+", "+", "+", "+", "+", "+", "+", "+", "-"), 
 srcTName = c("chr9", 
              "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", "chr9", 
@@ -461,8 +470,7 @@ srcStrand = c("+", "+", "+", "+", "+", "+", "+",
 knitr::kable(df)
 ```
 
-The result of `mapClusters` is a data frame which contains 207 observations and 
-8 variables. The above example is only a small sample of the results.
+
 
 In the example above, mapping was done from hg19 to Mm10.
 
@@ -479,7 +487,7 @@ to the regions on the right.
 
 ## <a id="Parallelism"></a> Parallelism
 
-This package uses parallelism by chromosome. One core will be allocated
+This package uses parallelism by chromosome. One core will be allocated 
 per chromosome. The number of cores is set to 2 by default.
 
 
