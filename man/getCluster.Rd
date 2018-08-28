@@ -4,7 +4,7 @@
 following user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = TRUE, chr = NULL, s = ".",
-n_cores = 2, order = NULL)
+order = NULL, n_cores = 2)
 
 }
 \description{
@@ -96,8 +96,7 @@ The returned value is a data frame that contains the clusters found.
 }
 
 \author{
-Pierre Khoueiry
-
-
-Ghiwa Khalil
+  Pierre Khoueiry
+  
+  Ghiwa Khalil
 }

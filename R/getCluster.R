@@ -9,7 +9,7 @@
 globalVariables(c("parOut","s","site","strand"))
 
 getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
-                      s="." , n_cores=2, order=NULL) {
+                      s="." , order=NULL, n_cores=2) {
 
     start.time = Sys.time()
 

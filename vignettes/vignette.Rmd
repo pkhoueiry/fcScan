@@ -387,8 +387,8 @@ knitr::kable(df)
 ```
 
 The resulting data frame will contain the *TRUE* and *FALSE* labelled 
-clusters. To get only the cluster labelled by *TRUE*
-We can subset by the following:
+clusters as well as the reason why the clustering (status column) failed.
+To get only the cluster labelled by *TRUE* We can subset by the following:
     
 > `clusters_TRUE = subset(clusters, isCluster)`  
 > `head(clusters_TRUE)`
@@ -419,6 +419,15 @@ knitr::kable(df)
 
 *clusters_TRUE* contains 20 observations with 10 variables.
 
+*NB*: Alternatively, we can call getCluster by using as input preformatted bed
+files. Assuming NANOG and TATA sites are stored in bed files "nanog.bed" and
+"tata.bed" respectively, the call for getCluster will be:
+
+`clusters = getCluster(c("nanog.bed", "tata.bed") , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", s = "+")`
+
+In this case, the "name column" in the bed file is ignoned and is replaced by 
+the name given in the "c" argument.
+
 
 ## <a id = "Example on Mapping"></a> Example on Mapping
 
@@ -427,7 +436,7 @@ Mapping will be done using the output of `getCluster`.
 To map the clusters which satisfied all the user defined conditions, and thus 
 are labelled *TRUE*.
 
-> `clusters_TRUE = clusters_TRUE[,c("chr", "start", "end", "id", "score", "strand")]`
+> `clusters_TRUE = clusters_TRUE[,c("chr", "start", "end", "id", "score", "strand")]`  
 > `mappedClusters = mapCluster( clusters_TRUE , chrom.sizes = "hg19.chrom.sizes", chain = "hg19ToMm10.over.chain")`
 
 The result of `mapClusters` is a data frame which contains 20 observations and 
