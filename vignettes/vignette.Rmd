@@ -308,8 +308,8 @@ To get the sites for each motif :
 
 Read each file into R
 
-> `NANOG = read.table("/home/gk39/tmp/NANOG_known1.txt", stringsAsFactors = FALSE)`  
-> `TATA = read.table("/home/gk39/tmp/TATA_known2.txt", stringsAsFactors = FALSE)`
+> `NANOG = read.table("Path/To/File/NANOG_known1.txt", stringsAsFactors = FALSE)`  
+> `TATA = read.table("Path/To/File/TATA_known2.txt", stringsAsFactors = FALSE)`
 
 Rearrange the columns to have the required data frame
 
