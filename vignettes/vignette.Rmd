@@ -86,7 +86,7 @@ They can be installed as follows:
 mapCluster requires to have "pslMap" and "bedToPsl" from kent utilities
 
 kent utilities can be downloaded from the following
-website [https://github.com/ENCODE-DCC/kentUtils]
+website [http://hgdownload.soe.ucsc.edu/admin/exe/]
 
 It is impprtant to note that not all operating systems
 support kent utils, and so the mapCluster functionality of fcScan will
@@ -230,11 +230,18 @@ The output of `getCluster` is a data frame with fields containing:
 * **sites**: The combination of sites that defines the cluster
 * **strand**: The strand of the cluster, if any
 * **isCluster**: A logical indicating if the cluster is TRUE or FALSE
-* **reason**: Describes the reason behind the rejection of a cluster 
+* **status**: Describes the reason behind the rejection of a cluster 
+* **score**: A score of 1 is added to all the clusters to have the elements of
+a bed format. Currently this score is insignificant.
 
 The algorithm returns all clusters containing the correct count of
 sites/features. If the combination, overlap, and order options are satisfied,
 the cluter is considered a `TRUE` cluster. 
+
+*status* of a cluster might be either PASS, combnFail, or orderFail.
+PASS is a cluster that satisfied the order and combination, combnFail is
+a cluster that satisfied the combination requirement and orderFail is a cluster
+that had the required combination but did not have the required order of sites.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
 than  in the condition parameter (`c`),  an error will be raised.
