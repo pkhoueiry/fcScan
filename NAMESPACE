@@ -1,5 +1,4 @@
 exportPattern("getCluster")
-exportPattern("mapCluster")
 importFrom(parallel, "makeCluster")
 importFrom(parallel, "stopCluster")
 importFrom(parallel, "detectCores")
