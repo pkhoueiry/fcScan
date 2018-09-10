@@ -10,16 +10,15 @@ order = NULL, n_cores = 2)
 \description{
 Given a data frame or bed/vcf files, this function will look for
 clusters of genomic features found within a user defined window size and
-satisfiying user defined categorical
-conditions.
+satisfiying user defined categorical conditions.
 }
 
 \arguments{
-    \item{x}{vector; Contains file names or a data frame}
+    \item{x}{Vector of file names or a data frame}
 
-    \item{w}{numeric; Value for the desired cluster size}
+    \item{w}{Value for the desired cluster size (numeric)}
 
-    \item{c}{vector; Represents the condition relative to each site name}
+    \item{c}{A named vector for condition relative to each site name}
 
     \item{overlap}{numeric; If negative, it will correspond to the maximum
                 overlap allowed between consecutive clusters, if positive,
@@ -51,32 +50,36 @@ conditions.
 
 \details{
 The function \emph{getCluster} will cluster coordinates based on a user defined
-window size.
-The user needs to specify the condition for clustering, which is the number of
-sites he requiresto have in each cluster. The user can also set the distance he
-requires to be found between each cluster using the overlap argument. If overlap
-is a negative number then this will represent the maximum overlap found
-between clusters, a positive number means that the clusters should have a
-minimum gap of the given value.
+number of sites and window size.
+The user needs to specify the condition for clustering, which is the
+sites and the number of sites required in each cluster. The user can
+also set the distance required between consective clusters using the
+overlap argument. If overlap is a negative, this will represent the
+maximum overlap allowed between clusters. If overlap is positive, this
+means that the clusters should have a minimum gap of the given value.
 
 The user can also choose to cluster on a specific strand by using the strand
 option, and specific chromosome by passing on the chromosome name as an
 argument.
 
-greedy by defualt is set to TRUE and this will allow clusters satisfying the
-condition and including other sites to be returned. If it is set to FALSE then
-only clusters having the exact condition will be returned.
-
-\emph{x} is a vector of files, but can also be a data frame.
-In the case of the data frame it should have 5
-columns \emph{chr start   end strand  site}. \emph{start} and \emph{end} column
+\emph{x} is a vector of files or a data frame.
+In the case of the data frame it should have 5 columns
+\emph{chr start end strand  site}. \emph{start} and \emph{end} column
 need to be numeric or integer, while the rest of the columns are of type
 character.
 
+The Greedy option controls if more sites are allowed in the
+cluster. When set to TRUE, getCluster will return sites containing
+the required number of sites and more as long as the window size
+condition is satisfied. When set to FALSE, getCluster will return
+clusters containing the exact number of the required sites. Default is
+set to TRUE.
+
 \emph{order} allows the user to choose whether the clusters should contain
-sites ordered in a certain way. By default is it set to NULL so the order of
-the sites in the clusters does not affect whether the clusters are labelled as
-TRUE or FALSE.
+sites ordered in a certain way. When set to NULL, sites order is not
+important.
+When defined, the order of the sites in the cluster must abide by the
+user defined order. Default is NULL.
 }
 
 \examples{
