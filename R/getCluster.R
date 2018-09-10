@@ -34,8 +34,9 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             x = load_data(my_files = x, c = c)
     }
 
-    if (w < 0)
-        stop("Window size cannot be a negative number")
+    ## Test if window is a positive integer
+    if (w < 0 | w%%1!=0)
+        stop("Window size should be a positive integer")
 
     if (!(s %in% c("+", "-", ".")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
@@ -47,12 +48,12 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             ##checking same consistency of name in order and condition
             for(i in 1:length(order)){
                 if(!(order[i] %in% names(c))){
-                    stop("Site names in order and condition not consistent")
+                    stop("Site names in order and condition do not match")
                 }
             }
             if(greedy == FALSE){
             if(length(order) > sum(c)) ##order has more sites than condition
-                stop("Not convenient order and condition")
+                stop("Order has more sites than condition")
             }
         }
 
