@@ -87,7 +87,7 @@ building clusters based on user defined parameters.
 >`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9")`
 
 
-###### Input data (x)
+### Input data (x)
 The input for `getCluster` is given through the parameter `x`.
 This function takes BED and VCF files (compressed or not). BED-12, BED-6, BED-4,
 and Bed-3 file formats are valid.
@@ -117,11 +117,11 @@ feature/site.
 The *site* column contains the ID of the site and will be used for clustering.
 *start* and *end* columns are numeric while the rest are characters.
 
-###### Window Size (w)
+### Window Size (w)
 Window size is set using `w`, and this parameter defines the size of the
 clusters.
 
-###### Condition (c)
+### Condition (c)
 The clustering condition `c` defines the number and type of genomic data to 
 search for in each cluster
 `c = c("TATA" = 1, "GATA" = 2)`  
@@ -138,7 +138,7 @@ define the site name along with the number relative to each site.
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.  
 `x = dataFrame_of_sites, c = c("TATA" = 1, "GATA" = 2)`
 
-######Chromosome (chr) and Strand (s)
+### Chromosome (chr) and Strand (s)
 By default, the clusters will be built on both strands and all chromosomes
 unless specified by the user using the `chr` and `s` arguments to limit the
 search on a specific chromosome or strand.
@@ -155,7 +155,7 @@ The values allowd for `s` are the following :
 * **.** : Clusters are not strand specific  
 (Default of `s` is **.**)
 
-###### Overlap (overlap)
+### Overlap (overlap)
 The gap/overlap between adjacent clusters can be controled using the `overlap`
 option.
 When `overlap` is positive, adjacent clusters will be separated by a minimum
@@ -164,7 +164,7 @@ When negative, adjacent clusers will be allowed to overlap by the a maximum
 of the given value.  
 (Default is **0**)
 
-###### Greedy vs Non-Greedy (greedy)
+### Greedy vs Non-Greedy (greedy)
 `greedy` allows the user to control the number of genomic features found 
 in clusters.
 
@@ -174,18 +174,17 @@ and type of genomic data provided in the condition argument.
 Clusters having the user defined window size but not satisfying
 the condition will be labelled as *FALSE*.
 
-`greedy = TRUE` will look for clusters having the required window size
-and will label *TRUE* the ones that contain the required condition of the
-genomic data or more. The rest will be labelled as *FALSE*.  
-(Default is **TRUE**)
+When `greedy = TRUE`, additional sites will be added to the cluster as
+long as the window size condition is satisfied.
+(Default is **TRUE**)  
 
 
-###### Order (order)
+### Order (order)
 The `order` option allows the user to define the specific order for the
 combination of sites required.  
 (Default is **NULL**)
 
-###### Number of cores (n_cores)
+### Number of cores (n_cores)
 This parameter allows the user to control the number of cores used by 
 `getCluster` when using parallel.  
 (Default is **2**)
@@ -207,7 +206,7 @@ a bed format. Currently this score is insignificant.
 
 The algorithm returns all clusters containing the correct count of
 sites/features. If the combination, overlap, and order options are satisfied,
-the cluter is considered a `TRUE` cluster. 
+the cluster is considered a `TRUE` cluster. 
 
 *status* of a cluster might be either PASS, combnFail, or orderFail.
 PASS is a cluster that satisfied the order and combination, combnFail is
@@ -224,7 +223,6 @@ sites than the required condition.
 ## <a id = "Example on Clustering"></a> Example on Clustering
 
 Following will be an example of how to use `getCluster` function.
-This is an example of a data frame given instead of files.
 
 The data can be downloaded from the following link [http://compbio.mit.edu/encode-motifs/]
 
@@ -239,11 +237,11 @@ it from the terminal using bash or any other alternative to extract the
 required sites.
 
 
-To get the sites for each motif :
-    
-    
+To get the sites for each motif:   
 > `grep -i "NANOG_known1" matches.txt > "NANOG_known1.txt"`  
 > `grep -i "TATA_known2" matches.txt > "TATA_known2.txt"`
+
+### Clustering using a data frame as input
 
 Read each file into R
 
@@ -357,7 +355,8 @@ knitr::kable(df)
 
 *clusters_TRUE* contains 20 observations with 10 variables.
 
-*NB*: Alternatively, we can call getCluster by using as input preformatted bed
+### Clustering using a data frame as input
+Alternatively, we can call getCluster by using as input preformatted bed
 files. Assuming NANOG and TATA sites are stored in bed files "nanog.bed" and
 "tata.bed" respectively, the call for getCluster will be:
 
