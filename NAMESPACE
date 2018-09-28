@@ -9,3 +9,6 @@ importFrom(stats, "complete.cases")
 importFrom(utils, "read.table")
 importFrom(utils, "write.table")
 importFrom(utils, "read.delim")
+importFrom(rtracklayer, "import")
+importFrom(VariantAnnotation, "readVcf")
+
