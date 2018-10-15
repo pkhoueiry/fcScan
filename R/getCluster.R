@@ -70,12 +70,10 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (s != ".") {
         x = subset(x, strand %in% s)
     }
-
     ##need to subset to keep only the sites required by the user
     x = subset(x, site %in% names(c))
     if (nrow(x) == 0) {
         message("Required sites not found")
-        stopCluster(cl)
         return(NULL)
     }
 
@@ -162,7 +160,7 @@ load_bed_files <- function(bed_files, c, x) {
     start_sites = unlist(lapply(data_bed, function(x) start(x)), use.names = FALSE)
     end_sites = unlist(lapply(data_bed, function(x) end(x)), use.names = FALSE)
     strand = unlist(lapply(data_bed, function(x) as.character(strand(x))), use.names = FALSE)
-    site = unlist(lapply(data_bed, function(x) x$name), use.names = FALSE)
+    site = unlist(lapply(data_bed, function(x) x$site), use.names = FALSE)
 
         ##creating the dataframe from granges
     df1 = data.frame("chr"= chr ,"start" = start_sites,
