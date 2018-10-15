@@ -10,6 +10,6 @@ importFrom(utils, "read.table")
 importFrom(utils, "write.table")
 importFrom(utils, "read.delim")
 importFrom(rtracklayer, "import")
-importFrom(VariantAnnotation, "readVcf")
+importFrom(matrixStats,"rowRanges")
+importFrom(VariantAnnotation,"readVcf")
 import(GenomicRanges)
-
