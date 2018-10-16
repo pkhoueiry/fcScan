@@ -1,10 +1,10 @@
-#' @title fcScan
+##' @title fcScan
 
-#' @export getCluster
+##' @export getCluster
 
-#   Build and Reload Package:  'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
+##   Build and Reload Package:  'Ctrl + Shift + B'
+##   Check Package:             'Ctrl + Shift + E'
+##   Test Package:              'Ctrl + Shift + T'
 
 globalVariables(c("parOut","s","site","strand"))
 
@@ -24,15 +24,15 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             stop("When input is data frame condition must be explicitly
     defined")
         }
-        } else {
-            if (length(c) != length(x))
-                stop("Condition and files should be of same length")
-            ##assigning condition
-            if (is.null(names(c))) {
-                names(c) = seq(from = 1,to = length(c),by = 1)
-            }
-            x = load_data(my_files = x, c = c)
+    } else {
+        if (length(c) != length(x))
+            stop("Condition and files should be of same length")
+        ##assigning condition
+        if (is.null(names(c))) {
+            names(c) = seq(from = 1,to = length(c),by = 1)
         }
+        x = load_data(all_files = x, c = c)
+    }
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
         stop("Window size should be a positive integer")
@@ -43,23 +43,23 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
     ##if not greedy and order is given
 
-        if(is.null(order) == FALSE){
-            ##checking same consistency of name in order and condition
-            for(i in 1:length(order)){
-                if(!(order[i] %in% names(c))){
-                    stop("Site names in order and condition do not match")
-                }
-            }
-            if(greedy == FALSE){
-            if(length(order) > sum(c)) ##order has more sites than condition
-                stop("Order has more sites than condition")
+    if(is.null(order) == FALSE){
+        ##checking same consistency of name in order and condition
+        for(i in 1:length(order)){
+            if(!(order[i] %in% names(c))){
+                stop("Site names in order and condition do not match")
             }
         }
+        if(greedy == FALSE){
+            if(length(order) > sum(c)) ##order has more sites than condition
+                stop("Order has more sites than condition")
+        }
+    }
 
     n = sum(c)
     res = array(data = NA, dim = c(nrow(x), ncol = 8))
     colnames(res) = c("chr", "start", "end", "size", "site", "strand",
-    "isCluster", "status")
+                      "isCluster", "status")
     ##getting sites found on the required chrom
     if (length(chr) > 0) {
         x = x[(x$chr %in% chr),]
@@ -88,7 +88,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                         df = subset(x, chr == unique_chr[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
-                        result = cluster_sites(df, w, c, overlap, n,
+                            result = cluster_sites(df, w, c, overlap, n,
                                                    res, s, greedy, order)
                         }
                     }
@@ -115,19 +115,20 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
 
 
-load_data <- function(my_files, c) {
+load_data <- function(all_files, c) {
     bed_files = c()
     vcf_files = c()
-    ##adding files to vcf or bed depending on extension
-    bed_files = grep("\\.bed$", my_files, value = TRUE)
-    vcf_files = grep("\\.vcf$|\\.vcf.gz$", my_files, value = TRUE)
+
+    ## getting bed files into bed_files and vcf files into vcf_files
+    bed_files = grep("\\.bed$", all_files, value = TRUE)
+    vcf_files = grep("\\.vcf$|\\.vcf.gz$", all_files, value = TRUE)
 
     if (length(bed_files) != 0) {
-        data_bed = load_bed_files(bed_files=bed_files, c=c, x=my_files)
+        data_bed = load_bed_files(bed_files=bed_files, c=c, x=all_files)
     }
 
     if (length(vcf_files) != 0) {
-        data_vcf = load_vcf_files(vcf_files=vcf_files, c=c, x=my_files)
+        data_vcf = load_vcf_files(vcf_files=vcf_files, c=c, x=all_files)
     }
 
     if (length(bed_files) != 0 & length(vcf_files) != 0) { #we have bed and vcf files
@@ -146,30 +147,35 @@ load_data <- function(my_files, c) {
 }
 
 load_bed_files <- function(bed_files, c, x) {
+    site = c()
     data_bed <- lapply(bed_files, import)
     names(data_bed) <- bed_files
 
-    for(i in seq_along(data_bed)){
-    index = which(x == names(data_bed[i]))
-    data_bed[[i]]$site = names(c)[index]
-    }
+    ## for(i in seq_along(data_bed)){
+        ## index = which(x == names(data_bed[i]))
+        ## data_bed[[i]]$site = names(c)[index]
+    ## }
 
-   #extract the needed cols: names,start,end,strand,site
+    ## extract the needed cols: names,start,end,strand,site
 
     chr = unlist(lapply(data_bed, function(x) as.character(seqnames(x))), use.names = FALSE)
     start_sites = unlist(lapply(data_bed, function(x) start(x)), use.names = FALSE)
     end_sites = unlist(lapply(data_bed, function(x) end(x)), use.names = FALSE)
     strand = unlist(lapply(data_bed, function(x) as.character(strand(x))), use.names = FALSE)
-    site = unlist(lapply(data_bed, function(x) x$site), use.names = FALSE)
+    ## site = unlist(lapply(data_bed, function(x) x$site), use.names = FALSE)
 
-        ##creating the dataframe from granges
+    for(i in seq_along(data_bed)){
+        site = c(site, rep(names(c[i]), length(data_bed[[i]])))
+    }
+    
+    ## creating the dataframe from granges
     df1 = data.frame("chr"= chr ,"start" = start_sites,
                      "end" = end_sites,"strand"= strand,
                      "site" = site, stringsAsFactors = FALSE)
 
-     if(length(which(df1$strand == "*")) > 0){
-         df1[which(df1$strand == "*"),]$strand = "+"
-     }
+    if(length(which(df1$strand == "*")) > 0){
+        df1[which(df1$strand == "*"),]$strand = "+"
+    }
     return(df1)
 }
 
@@ -177,16 +183,21 @@ load_vcf_files <- function(vcf_files, c, x) {
     site = c()
     data_vcf <- lapply(vcf_files, readVcf)
     names(data_vcf) <- vcf_files
-    for (i in seq_along(data_vcf)) {
-        index = which(x == names(data_vcf[i]))
-        site = c(site, names(c)[index] )
+
+    ## for (i in seq_along(data_vcf)) {
+    ##     index = which(x == names(data_vcf[i]))
+    ##     site = c(site, names(c)[index] )
+    ## }
+
+    chr = unlist(lapply(data_vcf, function(x) as.character(seqnames(x))), use.names = FALSE)
+    start = unlist(lapply(data_vcf, function(x) start(x)), use.names = FALSE)
+    end = unlist(lapply(data_vcf, function(x) end(x)), use.names = FALSE)
+    strand = unlist(lapply(data_vcf, function(x) as.character(strand(x))), use.names = FALSE)
+
+    for(i in seq_along(data_vcf)){
+        site = c(site, rep(names(c[i]), length(data_vcf[[i]])))
     }
-
-    chr = unlist(lapply(data_vcf, function(x) as.character(seqnames(rowRanges(x)))), use.names = FALSE)
-    start = unlist(lapply(data_vcf, function(x) start(rowRanges(x))), use.names = FALSE)
-    end = unlist(lapply(data_vcf, function(x) end(rowRanges(x))), use.names = FALSE)
-    strand = unlist(lapply(data_vcf, function(x) as.character(strand(rowRanges(x)))), use.names = FALSE)
-
+    
     df1 = data.frame("chr"= chr ,"start" = start,
                      "end" = end,"strand"= strand,
                      "site" = site, stringsAsFactors = FALSE)
@@ -196,7 +207,7 @@ load_vcf_files <- function(vcf_files, c, x) {
     }
     return(df1)
 
-    }
+}
 
 cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
     start <- df$start
@@ -283,7 +294,7 @@ testCombn <- function(ls, c, order) {
         ans$status = "PASS"
     } else{
         if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE)
-            {
+        {
             ans$logical = TRUE
             ans$status = "PASS"
         }else{
