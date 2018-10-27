@@ -151,11 +151,6 @@ load_bed_files <- function(bed_files, c, x) {
     data_bed <- lapply(bed_files, import)
     names(data_bed) <- bed_files
 
-    ## for(i in seq_along(data_bed)){
-        ## index = which(x == names(data_bed[i]))
-        ## data_bed[[i]]$site = names(c)[index]
-    ## }
-
     ## extract the needed cols: names,start,end,strand,site
 
     chr = unlist(lapply(data_bed, function(x) as.character(seqnames(x))), use.names = FALSE)
@@ -183,11 +178,6 @@ load_vcf_files <- function(vcf_files, c, x) {
     site = c()
     data_vcf <- lapply(vcf_files, readVcf)
     names(data_vcf) <- vcf_files
-
-    ## for (i in seq_along(data_vcf)) {
-    ##     index = which(x == names(data_vcf[i]))
-    ##     site = c(site, names(c)[index] )
-    ## }
 
     chr = unlist(lapply(data_vcf, function(x) as.character(seqnames(x))), use.names = FALSE)
     start = unlist(lapply(data_vcf, function(x) start(x)), use.names = FALSE)
