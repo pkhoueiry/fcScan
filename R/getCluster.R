@@ -22,16 +22,16 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (is.data.frame(x)) {
         if (is.null(names(c))) {
             stop("When input is data frame condition must be explicitly
-    defined")
+                 defined")
         }
-    } else {
-        if (length(c) != length(x))
-            stop("Condition and files should be of same length")
-        ##assigning condition
-        if (is.null(names(c))) {
-            names(c) = seq(from = 1,to = length(c),by = 1)
-        }
-        x = load_data(all_files = x, c = c)
+        } else {
+            if (length(c) != length(x))
+                stop("Condition and files should be of same length")
+            ##assigning condition
+            if (is.null(names(c))) {
+                names(c) = seq(from = 1,to = length(c),by = 1)
+            }
+            x = load_data(all_files = x, c = c)
     }
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
@@ -39,7 +39,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
     if (!(s %in% c("+", "-", ".")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
-     and "."')
+             and "."')
 
     ##if not greedy and order is given
 
@@ -65,17 +65,20 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         x = x[(x$chr %in% chr),]
     }
 
-
     ##getting sites found on the required strand
     if (s != ".") {
         x = subset(x, strand %in% s)
     }
-    ##need to subset to keep only the sites required by the user
-    x = subset(x, site %in% names(c))
-    if (nrow(x) == 0) {
-        message("Required sites not found")
+
+    ##check if the sites given in condition c are found in the data
+    if( !all(names(c) %in% x$site) ) {
+        message("Sites in condition do not match sites in data")
         return(NULL)
     }
+
+    ##need to subset to keep only the sites required by the user,
+    ##if the user wants sites 1,2 and the file has 1,2,3 we subset to get sites 1,2
+    x = subset(x, site %in% names(c))
 
     unique_chr = unique(x$chr)
 
@@ -124,11 +127,11 @@ load_data <- function(all_files, c) {
     vcf_files = grep("\\.vcf$|\\.vcf.gz$", all_files, value = TRUE)
 
     if (length(bed_files) != 0) {
-        data_bed = load_bed_files(bed_files=bed_files, c=c, x=all_files)
+        data_bed = load_files(files=bed_files, c=c, x=all_files)
     }
 
     if (length(vcf_files) != 0) {
-        data_vcf = load_vcf_files(vcf_files=vcf_files, c=c, x=all_files)
+        data_vcf = load_files(files=vcf_files, c=c, x=all_files)
     }
 
     if (length(bed_files) != 0 & length(vcf_files) != 0) { #we have bed and vcf files
@@ -146,23 +149,29 @@ load_data <- function(all_files, c) {
     }
 }
 
-load_bed_files <- function(bed_files, c, x) {
+load_files <- function(files, c, x) {
     site = c()
-    data_bed <- lapply(bed_files, import)
-    names(data_bed) <- bed_files
+    print (files)
+    if(file_ext(files[1]) == "bed") {
+    data_f <- lapply(files, import)
+    } else {
+    data_f <- lapply(files, readVcf)
+    }
+
+    names(data_f) <- files
 
     ## extract the needed cols: names,start,end,strand,site
 
-    chr = unlist(lapply(data_bed, function(x) as.character(seqnames(x))), use.names = FALSE)
-    start_sites = unlist(lapply(data_bed, function(x) start(x)), use.names = FALSE)
-    end_sites = unlist(lapply(data_bed, function(x) end(x)), use.names = FALSE)
-    strand = unlist(lapply(data_bed, function(x) as.character(strand(x))), use.names = FALSE)
-    ## site = unlist(lapply(data_bed, function(x) x$site), use.names = FALSE)
+    chr = unlist(lapply(data_f, function(x) as.character(seqnames(x))), use.names = FALSE)
+    start_sites = unlist(lapply(data_f, function(x) start(x)), use.names = FALSE)
+    end_sites = unlist(lapply(data_f, function(x) end(x)), use.names = FALSE)
+    strand = unlist(lapply(data_f, function(x) as.character(strand(x))), use.names = FALSE)
 
-    for(i in seq_along(data_bed)){
-        site = c(site, rep(names(c[i]), length(data_bed[[i]])))
+    for(i in seq_along(files)){
+        index = which(x == files[i])
+        site = c(site, rep(names(c[index]), length(data_f[[i]])))
     }
-    
+
     ## creating the dataframe from granges
     df1 = data.frame("chr"= chr ,"start" = start_sites,
                      "end" = end_sites,"strand"= strand,
@@ -171,33 +180,10 @@ load_bed_files <- function(bed_files, c, x) {
     if(length(which(df1$strand == "*")) > 0){
         df1[which(df1$strand == "*"),]$strand = "+"
     }
+    print("&***********************")
     return(df1)
 }
 
-load_vcf_files <- function(vcf_files, c, x) {
-    site = c()
-    data_vcf <- lapply(vcf_files, readVcf)
-    names(data_vcf) <- vcf_files
-
-    chr = unlist(lapply(data_vcf, function(x) as.character(seqnames(x))), use.names = FALSE)
-    start = unlist(lapply(data_vcf, function(x) start(x)), use.names = FALSE)
-    end = unlist(lapply(data_vcf, function(x) end(x)), use.names = FALSE)
-    strand = unlist(lapply(data_vcf, function(x) as.character(strand(x))), use.names = FALSE)
-
-    for(i in seq_along(data_vcf)){
-        site = c(site, rep(names(c[i]), length(data_vcf[[i]])))
-    }
-    
-    df1 = data.frame("chr"= chr ,"start" = start,
-                     "end" = end,"strand"= strand,
-                     "site" = site, stringsAsFactors = FALSE)
-
-    if(length(which(df1$strand == "*")) > 0){
-        df1[which(df1$strand == "*"),]$strand = "+"
-    }
-    return(df1)
-
-}
 
 cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
     start <- df$start
