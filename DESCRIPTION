@@ -14,7 +14,7 @@ Description: Used to detect combination of genomic coordinates falling within
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
-Imports: parallel, doParallel, foreach, stats, utils,VariantAnnotation,rtracklayer,matrixStats,GenomicRanges
+Imports: parallel, doParallel, foreach, stats, utils,VariantAnnotation,rtracklayer,matrixStats,GenomicRanges,tools
 Suggests: BiocStyle, knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 6.1.0
