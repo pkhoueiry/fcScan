@@ -153,9 +153,9 @@ load_files <- function(files, c, x) {
     site = c()
     print (files)
     if(file_ext(files[1]) == "bed") {
-    data_f <- lapply(files, import)
+        data_f <- lapply(files, import)
     } else {
-    data_f <- lapply(files, readVcf)
+        data_f <- lapply(files, readVcf)
     }
 
     names(data_f) <- files
@@ -281,24 +281,5 @@ testCombn <- function(ls, c, order) {
     return(ans)
 }
 
-detect_vcf_end <- function(x) {
-    indices = which((grepl(",", x$alt, fixed = TRUE)) == TRUE)
-    index = which(nchar(x$alt) > 1)
-    index = index[which(!(index %in% indices))]
-    if (length(indices) == 0) {
-        return(x)
-    }
-
-    for (i in 1:length(indices)) {
-        s = (x$alt[indices[i]])
-        alt = unlist(strsplit(s, ","))
-        max = max(nchar(alt))
-        x$end[indices[i]] = x$end[indices[i]] + max - 1
-    }
-    for (i in 1:length(index)) {
-        x$end[index[i]] = x$end[index[i]] + nchar(x$start[index[i]]) - 1
-    }
-    return(x)
-}
 
 
