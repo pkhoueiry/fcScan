@@ -46,7 +46,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if(is.null(order) == FALSE){
         ##checking same consistency of name in order and condition
         for(i in 1:length(order)){
-            if(!(order[i] %in% names(c))){
+            if(!(names(order)[i] %in% names(c))){
                 stop("Site names in order and condition do not match")
             }
         }
@@ -151,6 +151,7 @@ load_data <- function(all_files, c) {
 
 load_files <- function(files, c, x) {
     site = c()
+    print (files)
     if(file_ext(files[1]) == "bed") {
         data_f <- lapply(files, import)
     } else {
