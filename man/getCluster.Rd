@@ -88,8 +88,8 @@ user defined order. Default is NULL.
  strand = c("+","+","+","+","+","+" ),
  site = c("s1", "s2", "s1","s2","s1", "s2"))
 
-clusters = getCluster(x, w = 10, c = c("s1"=1,"s2"=1),
-greedy = TRUE, overlap = -5, s = "+")
+clusters = getCluster(x, w = 10, c = c("s1"=1,"s2"=2),
+greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
 
 }
 
@@ -100,6 +100,6 @@ The returned value is a data frame that contains the clusters found.
 
 \author{
   Pierre Khoueiry
-  
+
   Ghiwa Khalil
 }
