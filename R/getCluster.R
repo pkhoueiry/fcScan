@@ -24,14 +24,14 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             stop("When input is data frame condition must be explicitly
                  defined")
         }
-        } else {
-            if (length(c) != length(x))
-                stop("Condition and files should be of same length")
-            ##assigning condition
-            if (is.null(names(c))) {
-                names(c) = seq(from = 1,to = length(c),by = 1)
-            }
-            x = load_data(all_files = x, c = c)
+    } else {
+        if (length(c) != length(x))
+            stop("Condition and files should be of same length")
+        ##assigning condition
+        if (is.null(names(c))) {
+            names(c) = seq(from = 1,to = length(c),by = 1)
+        }
+        x = load_data(all_files = x, c = c)
     }
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
@@ -44,10 +44,10 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     ##if not greedy and order is given
 
     if(is.null(order) == FALSE){
-        ##checking same consistency of name in order and condition
+        ##checking for consistency of name in order and condition
         for(i in 1:length(order)){
-            if(!(names(order)[i] %in% names(c))){
-                stop("Site names in order and condition do not match")
+            if(!order[i] %in% names(c)){
+                stop(paste("Site names in order and condition do not match: ", order[i], sep=""))
             }
         }
         if(greedy == FALSE){
