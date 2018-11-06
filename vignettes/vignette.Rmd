@@ -84,7 +84,7 @@ building clusters based on user defined parameters.
 ## <a id="Input arguments for getCluster"></a> Input arguments for getCluster
 
 
->`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9")`
+>`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("TATA_known2","NANOG_known1","NANOG_known1"))`
 
 
 ### Input data (x)
@@ -182,6 +182,11 @@ long as the window size condition is satisfied.
 ### Order (order)
 The `order` option allows the user to define the specific order for the
 combination of sites required.  
+Given the order in the above example to be :
+`order = c("TATA_known2","NANOG_known1","NANOG_known1")`
+This will search for a cluster containing the above sites in the exact same order.
+They can be a sub order of a larger cluster or simply a cluster containing these sites.
+For example if a cluster has "TATA_known2 TATA_known2 NANOG_known1 NANOG_known1 NANOG_known1", this cluster has the required order and therefore will be conisdered as a correct cluster.
 (Default is **NULL**)
 
 ### Number of cores (n_cores)
@@ -294,30 +299,30 @@ Since `chr` has the value `chr9` and `s` has the value `+`, clusters will
 only be built on chromosome 9 only and for sites defined on the positive strand
 exclusively.
 
->`clusters = getCluster(x , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", s = "+")`
+>`clusters = getCluster(x , w = 20000 , c = c("NANOG_known1" = 1, "TATA_known2" = 2 ), overlap = -5, chr = "chr9", s = "+",order = c("TATA_known2","NANOG_known1","NANOG_known1"))`
 
 The results are stored in a data frame named clusters. *clusters* contains 
-1606 observations with 10 variables
+1644 observations with 10 variables
 
 
 >`head(clusters)`
 
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
+df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9","chr9"), 
                  start = c(25818, 165838, 202789, 253853, 361625, 
-                           387687), 
+                           387687,5831141), 
                  end = c(25832, 165852, 202800, 253867, 361639,
-                         387701), 
-                 clusterSize = c("14", "14", "11", "14", "14", "14"), 
+                         387701,5846962), 
+                 size = c("14", "14", "11", "14", "14", "14","15821"), 
                  site = c("TATA_known2", "TATA_known2", "NANOG_known1", 
-                          "TATA_known2", "TATA_known2", "TATA_known2"), 
-                 strand = c("+", "+", "+", "+", "+", "+"), 
+                          "TATA_known2", "TATA_known2", "TATA_known2","TATA_known2,TATA_known2,NANOG_known1"), 
+                 strand = c("+", "+", "+", "+", "+", "+","+"), 
                  isCluster = c("FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-                               "FALSE"),
+                               "FALSE","FALSE"),
                   status = c("combnFail", "combnFail", "combnFail", 
-                    "combnFail", "combnFail", "combnFail"),
-                 id = c("c1", "c2", "c3", "c4", "c5", "c6"),
-                    score = c(1, 1, 1, 1, 1, 1))
+                    "combnFail", "combnFail", "combnFail","orderFail"),
+                 id = c("c1", "c2", "c3", "c4", "c5", "c6","c94"),
+                    score = c(1, 1, 1, 1, 1, 1,1))
 
 knitr::kable(df)
 ```
@@ -331,24 +336,16 @@ To get only the cluster labelled by *TRUE* We can subset by the following:
 
 
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9"), 
-                 start = c(5831141, 9319579, 16533736, 21748099,
-                           23403001, 23714517), 
-                 end = c(5846962, 9331595, 16549756, 21753346,
-                         23415107, 23728984), 
-                 clusterSize = c("15821", "12016", "16020", "5247",
-                                 "12106", "14467"), 
-                 site = c("TATA_known2,TATA_known2,NANOG_known1",
-                          "NANOG_known1,TATA_known2,TATA_known2",
-                          "TATA_known2,TATA_known2,NANOG_known1", 
-                          "TATA_known2,NANOG_known1,TATA_known2",
-                          "NANOG_known1,TATA_known2,TATA_known2", 
-                          "TATA_known2,NANOG_known1,TATA_known2"), 
-                 strand = c("+", "+", "+", "+", "+", "+"),
-                isCluster = c("TRUE", "TRUE", "TRUE", "TRUE", "TRUE", "TRUE"), 
-                 status = c("PASS", "PASS","PASS", "PASS", "PASS", "PASS"),
-                 id = c("c94", "c138", "c253", "c331", "c347", "c354"),
-                 score = c(1, 1, 1, 1, 1, 1))
+df <- data.frame(chr = c("chr9"), 
+                 start = c(83497976), 
+                 end = c(83517867), 
+                 size = c(19891), 
+                 site = c("TATA_known2,TATA_known2,TATA_known2,NANOG_known1,NANOG_known1"), 
+                 strand = c("+"),
+                isCluster = c("TRUE"), 
+                 status = c("PASS"),
+                 id = c("c882"),
+                 score = c("1"))
 
 knitr::kable(df)
 ```
