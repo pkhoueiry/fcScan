@@ -51,8 +51,9 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             }
         }
         if(greedy == FALSE){
-            if(length(order) > sum(c)) ##order has more sites than condition
+            if(length(order) > sum(c)){##order has more sites than condition
                 stop("Order has more sites than condition")
+            }
         }
     }
 
@@ -77,7 +78,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     }
 
     ##need to subset to keep only the sites required by the user,
-    ##if the user wants sites 1,2 and the file has 1,2,3 we subset to get sites 1,2
+    ##if the user wants sites "a","b" and input has "a", "b" and "c", we subset to get sites "a", "b"
     x = subset(x, site %in% names(c))
 
     unique_chr = unique(x$chr)

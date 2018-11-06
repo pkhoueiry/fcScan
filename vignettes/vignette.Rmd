@@ -66,25 +66,17 @@ usage of getCluster :
 * **stats**
 * **utils**
 
-They can be installed as follows:
-    
-* **install.packages**("parallel")
-* **install.packages**("doParallel")
-* **install.packages**("foreach")
-* **install.packages**("stats")
-* **install.packages**("utils")
-
-
 ## <a id="Overview"></a> Overview
 
-fcScan contains the function, `getCluster` that is responsible for
-building clusters based on user defined parameters.
+fcScan finds clusters of genomic features based on user defined 
+parameters. Currently, it has one main function, the `getCluster`
+function.
 
 
 ## <a id="Input arguments for getCluster"></a> Input arguments for getCluster
 
 
->`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("TATA_known2","NANOG_known1","NANOG_known1"))`
+>`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("TATA","NANOG","NANOG"))`
 
 
 ### Input data (x)
@@ -118,26 +110,27 @@ The *site* column contains the ID of the site and will be used for clustering.
 *start* and *end* columns are numeric while the rest are characters.
 
 ### Window Size (w)
-Window size is set using `w`, and this parameter defines the size of the
+Window size is set using `w`, and this parameter defines the maximum size of the
 clusters.
 
 ### Condition (c)
 The clustering condition `c` defines the number and type of genomic data to 
-search for in each cluster
+search for in each cluster based on the information in the `site` column
 `c = c("TATA" = 1, "GATA" = 2)`  
 This searches for clusters with 3 sites, One *TATA* and two  *GATA*.
 
 Another way of writing the condition is the following 
 `x = ("TATA.bed","GATA.bed"), c = c(1,2)`  
 Given 2 files, *TATA.bed* and *GATA.bed*, this condition states that the user is 
-looking for clusters made from 1 TATA site and 2 GATA sites. The numbers 
-given in the condition are relative to the order of the files given. 
+looking for clusters made from 1 TATA site and 2 GATA sites. In this case, the\
+order of sites defined in `c` is relative to the order of files.
 
-In case a data frame is given instead of files, the user needs to **explicitly** 
-define the site name along with the number relative to each site. 
+In case the input is a data frame (instead of files), the user needs to **explicitly** 
+define the site name along with the count relative to each site. 
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.  
-`x = dataFrame_of_sites, c = c("TATA" = 1, "GATA" = 2)`
-
+`x = dataFrame_of_sites, c = c("TATA" = 1, "GATA" = 2)` where `TATA`
+ and `GATA` are site names in the `site` column.
+ 
 ### Chromosome (chr) and Strand (s)
 By default, the clusters will be built on both strands and all chromosomes
 unless specified by the user using the `chr` and `s` arguments to limit the
@@ -148,10 +141,10 @@ on more than one chromosome `(chr = c("chr1","chr3","chr4"))`
 (Default of `chr` is **NULL**) meaning that clustering on all chromosomes 
 will be performed.
 
-The values allowd for `s` are the following : 
+For `s`, the values allowed are: 
 
-* **+** : Build clusters on +ve strand
-* **-** :  Build clusters on -ve strand
+* **+** : Build clusters on positive strand
+* **-** : Build clusters on negative strand
 * **.** : Clusters are not strand specific  
 (Default of `s` is **.**)
 
@@ -160,7 +153,7 @@ The gap/overlap between adjacent clusters can be controled using the `overlap`
 option.
 When `overlap` is positive, adjacent clusters will be separated by a minimum
 of the given value.
-When negative, adjacent clusers will be allowed to overlap by the a maximum
+When `overlap` is negative, adjacent clusers will be allowed to overlap by a maximum
 of the given value.  
 (Default is **0**)
 
@@ -169,13 +162,13 @@ of the given value.
 in clusters.
 
 When `greedy = FALSE`, `getCluster` will build clusters having the required
-window size and will label *TRUE* the ones that contain the exact number
-and type of genomic data provided in the condition argument.
+window size and will label *TRUE* the ones that contain the **exact** number
+and type of sites provided in the condition argument.
 Clusters having the user defined window size but not satisfying
 the condition will be labelled as *FALSE*.
 
 When `greedy = TRUE`, additional sites will be added to the cluster as
-long as the window size condition is satisfied.
+long as the cluster size is below the difined  window size.
 (Default is **TRUE**)  
 
 
@@ -183,10 +176,11 @@ long as the window size condition is satisfied.
 The `order` option allows the user to define the specific order for the
 combination of sites required.  
 Given the order in the above example to be :
-`order = c("TATA_known2","NANOG_known1","NANOG_known1")`
+`order = c("TATA","NANOG","NANOG")`
 This will search for a cluster containing the above sites in the exact same order.
 They can be a sub order of a larger cluster or simply a cluster containing these sites.
-For example if a cluster has "TATA_known2 TATA_known2 NANOG_known1 NANOG_known1 NANOG_known1", this cluster has the required order and therefore will be conisdered as a correct cluster.
+For example if a cluster has "TATA TATA NANOG NANOG NANOG", this cluster has the required
+order and therefore will be conisdered as a correct cluster.
 (Default is **NULL**)
 
 ### Number of cores (n_cores)
@@ -202,7 +196,7 @@ The output of `getCluster` is a data frame with fields containing:
 * **start**: The start of the cluster
 * **end**: The end of the cluster
 * **size**: The size of the cluster
-* **sites**: The combination of sites that defines the cluster
+* **sites**: The combination of sites that define the cluster
 * **strand**: The strand of the cluster, if any
 * **isCluster**: A logical indicating if the cluster is TRUE or FALSE
 * **status**: Describes the reason behind the rejection of a cluster 
@@ -214,15 +208,15 @@ sites/features. If the combination, overlap, and order options are satisfied,
 the cluster is considered a `TRUE` cluster. 
 
 *status* of a cluster might be either PASS, combnFail, or orderFail.
-PASS is a cluster that satisfied the order and combination, combnFail is
-a cluster that satisfied the combination requirement and orderFail is a cluster
+`PASS` is a cluster that satisfied the order and combination. `combnFail` is
+a cluster that didn't satisfy the combination requirement and `orderFail` is a cluster
 that had the required combination but did not have the required order of sites.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
 than  in the condition parameter (`c`),  an error will be raised.
 However, if `greedy = TRUE`, then using `order` with more values than the 
 condition paramerter is allowed since a greedy cluster may contain more 
-sites than the required condition.
+sites than the required `c` condition as long as the window size is respected.
 
 
 ## <a id = "Example on Clustering"></a> Example on Clustering
