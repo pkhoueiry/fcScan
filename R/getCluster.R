@@ -155,7 +155,6 @@ load_data <- function(all_files, c) {
 
 load_files <- function(files, c, x) {
     site = c()
-    print (files)
     if(file_ext(files[1]) == "bed") {
         data_f <- lapply(files, import)
     } else {
