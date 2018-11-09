@@ -51,8 +51,11 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
             }
         }
         if(greedy == FALSE){
-            if(length(order) > sum(c)){##order has more sites than condition
-                stop("Order has more sites than condition")
+            ## order has more sites than condition
+            for(i in 1:length(unique(order))){
+                if(sum(unique(order)[i] == order) > c[which(names(c) == unique(order)[i])]){
+                    stop("Greedy is FALSE and requested order is larger than condition")
+                }
             }
         }
     }
