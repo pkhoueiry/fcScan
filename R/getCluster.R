@@ -101,7 +101,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                     }
     row.names(final) <- NULL
 
-    ##if we have only one row the class will be a character
+    ## if we have only one row the class will be a character
     if (class(final) == "character") {
         final = t(final)
     }
@@ -114,6 +114,9 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         final$id = paste("c", seq.int(nrow(final)), sep = "")
         final$score = 1
     }
+
+    final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
+    
     stopCluster(cl)
     end.time = Sys.time()
     print(end.time - start.time)
@@ -137,17 +140,20 @@ load_data <- function(all_files, c) {
     if (length(vcf_files) != 0) {
         data_vcf = load_files(files=vcf_files, c=c, x=all_files)
     }
-
-    if (length(bed_files) != 0 & length(vcf_files) != 0) { #we have bed and vcf files
+    
+    ## we have bed and vcf files
+    if (length(bed_files) != 0 & length(vcf_files) != 0) { 
         data <-  rbind(data_bed, data_vcf)
         rownames(data) <- c()
         return(data)
     }
-    else if (length(bed_files) != 0 & length(vcf_files) == 0) {#we have bed files
+    ## we have bed files
+    else if (length(bed_files) != 0 & length(vcf_files) == 0) {
         rownames(data_bed) <- c()
         return(data_bed)
     }
-    else {#we have vcf files
+    ## we have vcf files
+    else {
         rownames(data_vcf) <- c()
         return(data_vcf)
     }
