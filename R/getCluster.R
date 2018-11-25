@@ -105,16 +105,19 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     if (class(final) == "character") {
         final = t(final)
     }
-    final = as.data.frame(final , stringsAsFactors = FALSE)
-    if (nrow(final) != 0) {
-        final$start = as.numeric(final$start)
-        final$end = as.numeric(final$end)
-        final$size = as.numeric(final$size)
-        final$isCluster = as.logical(final$isCluster)
-        final$id = paste("c", seq.int(nrow(final)), sep = "")
-        final$score = 1
-    }
 
+    if (nrow(final) != 0) {
+        final = data.frame(chr = as.character(final[,"chr"]),
+                           start = as.numeric(final[,"start"]),
+                           end = as.numeric(final[,"end"]),
+                           size = as.numeric(final[,"size"]),
+                           isCluster = as.logical(final[,"isCluster"]),
+                           id = paste("c", seq.int(nrow(final)), sep = ""),
+                           score = 1,
+                           stringsAsFactors = FALSE
+                           )
+    }
+    
     final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
     
     stopCluster(cl)
