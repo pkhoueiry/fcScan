@@ -137,12 +137,15 @@ load_data <- function(all_files, c) {
     vcf_files = grep("\\.vcf$|\\.vcf.gz$", all_files, value = TRUE)
 
     if (length(bed_files) != 0) {
-        data_bed = load_files(files=bed_files, c=c, x=all_files)
+        data_bed = lapply(bed_files, import)
     }
 
     if (length(vcf_files) != 0) {
-        data_vcf = load_files(files=vcf_files, c=c, x=all_files)
+        data_vcf = lapply(vcf_files, readVcf)
     }
+
+    dataBed <- lapply(Sys.glob("*.bed"), import)
+    dataVcf <- lapply(Sys.glob(c("*.vcf", "*.vcf.gz")), import)
     
     ## we have bed and vcf files
     if (length(bed_files) != 0 & length(vcf_files) != 0) { 
