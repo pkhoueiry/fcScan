@@ -21,18 +21,22 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     ##given data frame and not correct format of condition
     if (is.data.frame(x)) {
         if (is.null(names(c))) {
-            stop("When input is data frame condition must be explicitly
+            stop("When input is a data frame, condition must be explicitly
                  defined")
         }
     } else {
         if (length(c) != length(x))
             stop("Condition and files should be of same length")
-        ##assigning condition
+        
+        ##assigning names to condition if null
         if (is.null(names(c))) {
             names(c) = seq(from = 1,to = length(c),by = 1)
         }
+        
         x = load_data(all_files = x, c = c)
     }
+    
+
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
         stop("Window size should be a positive integer")
@@ -113,6 +117,8 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                            size = as.numeric(final[,"size"]),
                            isCluster = as.logical(final[,"isCluster"]),
                            id = paste("c", seq.int(nrow(final)), sep = ""),
+                           status = as.character(final[,"status"]),
+                           sites = as.character(final[,"site"]),
                            score = 1,
                            stringsAsFactors = FALSE
                            )
@@ -127,75 +133,21 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 }
 
 
-
 load_data <- function(all_files, c) {
-    bed_files = c()
-    vcf_files = c()
-
-    ## getting bed files into bed_files and vcf files into vcf_files
-    bed_files = grep("\\.bed$", all_files, value = TRUE)
-    vcf_files = grep("\\.vcf$|\\.vcf.gz$", all_files, value = TRUE)
-
-    if (length(bed_files) != 0) {
-        data_bed = lapply(bed_files, import)
+    df = NULL
+    for(i in 1:length(all_files)){
+        if(grepl("\\.bed$", all_files[i])){
+            b = import(all_files[i])
+        }
+        else if(grepl("\\.vcf$|\\.vcf.gz$", all_files[i])){
+            b = rowRanges(readVcf(all_files[i]))
+        }
+        b$site = names(c[i])
+        df = rbind(df, as.data.frame(b)[, c("seqnames","start","end","strand","site")])
     }
-
-    if (length(vcf_files) != 0) {
-        data_vcf = lapply(vcf_files, readVcf)
-    }
-
-    dataBed <- lapply(Sys.glob("*.bed"), import)
-    dataVcf <- lapply(Sys.glob(c("*.vcf", "*.vcf.gz")), import)
-    
-    ## we have bed and vcf files
-    if (length(bed_files) != 0 & length(vcf_files) != 0) { 
-        data <-  rbind(data_bed, data_vcf)
-        rownames(data) <- c()
-        return(data)
-    }
-    ## we have bed files
-    else if (length(bed_files) != 0 & length(vcf_files) == 0) {
-        rownames(data_bed) <- c()
-        return(data_bed)
-    }
-    ## we have vcf files
-    else {
-        rownames(data_vcf) <- c()
-        return(data_vcf)
-    }
-}
-
-load_files <- function(files, c, x) {
-    site = c()
-    if(file_ext(files[1]) == "bed") {
-        data_f <- lapply(files, import)
-    } else {
-        data_f <- lapply(files, readVcf)
-    }
-
-    names(data_f) <- files
-
-    ## extract the needed cols: names,start,end,strand,site
-
-    chr = unlist(lapply(data_f, function(x) as.character(seqnames(x))), use.names = FALSE)
-    start_sites = unlist(lapply(data_f, function(x) start(x)), use.names = FALSE)
-    end_sites = unlist(lapply(data_f, function(x) end(x)), use.names = FALSE)
-    strand = unlist(lapply(data_f, function(x) as.character(strand(x))), use.names = FALSE)
-
-    for(i in seq_along(files)){
-        index = which(x == files[i])
-        site = c(site, rep(names(c[index]), length(data_f[[i]])))
-    }
-
-    ## creating the dataframe from granges
-    df1 = data.frame("chr"= chr ,"start" = start_sites,
-                     "end" = end_sites,"strand"= strand,
-                     "site" = site, stringsAsFactors = FALSE)
-
-    if(length(which(df1$strand == "*")) > 0){
-        df1[which(df1$strand == "*"),]$strand = "+"
-    }
-    return(df1)
+    colnames(df)[1] <- "chr"
+    df$strand[df$strand == "*"] <- "+"
+    return(df)
 }
 
 

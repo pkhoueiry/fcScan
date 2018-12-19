@@ -1,20 +1,20 @@
 Package:fcScan
 Type: Package
-Title: gfScan for detecting clusters of coordinates with user defined options
+Title: fcScan for detecting clusters of coordinates with user defined options
 Version: 0.99.0
 biocViews: ComparativeGenomics
-Author: Pierre Khoeuiry(pk17@aub.edu.lb) Ghiwa khalil(ghiwa.khalil@lau.edu) 
-Maintainer: Pierre Khoeuiry <pk17@aub.edu.lb>
+Author: Pierre Khoueiry(pk17@aub.edu.lb) Ghiwa khalil(gk39@aub.edu.lb) 
+Maintainer: Pierre Khoueiry <pk17@aub.edu.lb>
 Description: Used to detect combination of genomic coordinates falling within
     a user defined window size along with user defined overlap between
-    identified neighboring clusters.Can be used for genomic data where the
+    identified neighboring clusters. Can be used for genomic data where the
     clusters are built on a specific chromosome or specific strand. 
     Clustering can be performed with a “greedy” option allowing thus
     the presence of additional sites within the allowed window size.
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
-Imports: parallel, doParallel, foreach, stats, utils,VariantAnnotation,rtracklayer,matrixStats,GenomicRanges,tools
+Imports: parallel, doParallel, foreach, stats, utils, VariantAnnotation, rtracklayer, GenomicRanges, tools
 Suggests: BiocStyle, knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 6.1.0
