@@ -2,28 +2,26 @@
 
 ##' @export getCluster
 
-##   Build and Reload Package:  'Ctrl + Shift + B'
-##   Check Package:             'Ctrl + Shift + E'
-##   Test Package:              'Ctrl + Shift + T'
-
 globalVariables(c("parOut","s","site","strand"))
 
-getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
+getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
                       s="." , order=NULL, n_cores=2) {
 
     start.time = Sys.time()
 
     ##check arguments
     if (missing(x)) {
-        stop("Need to specify the files to be used")
+        stop("A data frame, Granges object or input files are needed")
     }
 
-    ##given data frame and not correct format of condition
-    if (is.data.frame(x)) {
+    ## Checking input format
+    if (is(x, "data.frame")) {
         if (is.null(names(c))) {
-            stop("When input is a data frame, condition must be explicitly
-                 defined")
+            stop("When input is a data frame, names of sites in condition must 
+be explicitly defined")
         }
+    } else if (is(x, "GRanges")){
+        x <- as.data.frame(x)
     } else {
         if (length(c) != length(x))
             stop("Condition and files should be of same length")
@@ -36,29 +34,28 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
         x = load_data(all_files = x, c = c)
     }
     
-
+    
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
         stop("Window size should be a positive integer")
-
+    
     if (!(s %in% c("+", "-", ".")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
              and "."')
 
     ##if not greedy and order is given
-
     if(is.null(order) == FALSE){
         ##checking for consistency of name in order and condition
-        for(i in 1:length(order)){
+        for(i in seq_along(order)){
             if(!order[i] %in% names(c)){
                 stop(paste("Site names in order and condition do not match: ", order[i], sep=""))
             }
         }
         if(greedy == FALSE){
             ## order has more sites than condition
-            for(i in 1:length(unique(order))){
+            for(i in seq_along(unique(order))){
                 if(sum(unique(order)[i] == order) > c[which(names(c) == unique(order)[i])]){
-                    stop("Greedy is FALSE and requested order is larger than condition")
+                    stop("Greedy is FALSE and order is larger than condition")
                 }
             }
         }
@@ -66,11 +63,11 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
     n = sum(c)
     res = array(data = NA, dim = c(nrow(x), ncol = 8))
-    colnames(res) = c("chr", "start", "end", "size", "site", "strand",
+    colnames(res) = c("seqnames", "start", "end", "size", "site", "strand",
                       "isCluster", "status")
-    ##getting sites found on the required chrom
-    if (length(chr) > 0) {
-        x = x[(x$chr %in% chr),]
+    ##getting sites found on the required seqnamesom
+    if (length(seqnames) > 0) {
+        x = x[(x$seqnames %in% seqnames),]
     }
 
     ##getting sites found on the required strand
@@ -88,15 +85,15 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     ##if the user wants sites "a","b" and input has "a", "b" and "c", we subset to get sites "a", "b"
     x = subset(x, site %in% names(c))
 
-    unique_chr = unique(x$chr)
+    unique_seqnames = unique(x$seqnames)
 
     cl <- makeCluster(n_cores)
     registerDoParallel(cl)
 
-    final = foreach(parOut = 1:length(unique_chr) ,
+    final = foreach(parOut = seq_along(unique_seqnames) ,
                     .export = c("testCombn","cluster_sites"),
                     .combine = rbind) %dopar% {
-                        df = subset(x, chr == unique_chr[parOut])
+                        df = subset(x, seqnames == unique_seqnames[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
                             result = cluster_sites(df, w, c, overlap, n,
@@ -111,7 +108,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
     }
 
     if (nrow(final) != 0) {
-        final = data.frame(chr = as.character(final[,"chr"]),
+        final = data.frame(seqnames = as.character(final[,"seqnames"]),
                            start = as.numeric(final[,"start"]),
                            end = as.numeric(final[,"end"]),
                            size = as.numeric(final[,"size"]),
@@ -135,7 +132,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
 
 load_data <- function(all_files, c) {
     df = NULL
-    for(i in 1:length(all_files)){
+    for(i in seq_along(all_files)){
         if(grepl("\\.bed$", all_files[i])){
             b = import(all_files[i])
         }
@@ -145,7 +142,6 @@ load_data <- function(all_files, c) {
         b$site = names(c[i])
         df = rbind(df, as.data.frame(b)[, c("seqnames","start","end","strand","site")])
     }
-    colnames(df)[1] <- "chr"
     df$strand[df$strand == "*"] <- "+"
     return(df)
 }
@@ -165,7 +161,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
     }
 
     ## non greedy
-    for (i in 1:upper_boundary) {
+    for (i in seq_along(1:upper_boundary)) {
         ## check for overlap. basically, the first new
         ##site should satisfythe overlap condition
         if (greedy == TRUE) {
@@ -202,7 +198,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ans <- testCombn(ls, c, order)
         isCluster = ans$logical
 
-        res[i, "chr"] <- as.character(df$chr[i])
+        res[i, "seqnames"] <- as.character(df$seqnames[i])
         res[i, "start"] <- start[i]
         res[i, "end"] <- end
         res[i, "size"] <- end - start[i]

@@ -1,16 +1,36 @@
 ---
-title: "fcScan"
+title: feacture clustering scan
 author:
-- Pierre Khoueiry
-- Ghiwa Khalil
+- name: Pierre Khoueiry
+  affiliation:
+  - &id American University of Beirut
+- name: Ghiwa Khalil
+  affiliation: *id
+  email: pk17@aub.edu.lb
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-package: fcScan
 vignette: >
-  %\VignetteEngine{knitr::rmarkdown}  
-  %\VignetteIndexEntry{fcScan}  
-  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{fcScan}
+  %\VignetteEngine{knitr::rmarkdown}
+output: BiocStyle::html_document
+package: fcScan
 ---
+
+
+# Version Info
+```{r, echo=FALSE, results="hide", warning=FALSE}
+suppressPackageStartupMessages({library('fcScan')})
+```
+<p>
+**R version**: `r R.version.string`
+<br />
+**Bioconductor version**: `r BiocInstaller::biocVersion()`
+<br />
+**Package version**: `r packageVersion("fcScan")`
+</p>
+
+```{r style, echo = FALSE, results = 'asis'}
+BiocStyle::markdown()
+```
 
 ```{r, setup, include = FALSE}
 knitr::opts_chunk$set(
@@ -19,20 +39,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-
-## Table of Contents
-* [Introduction](#introduction) 
-* [Dependencies](#Dependencies)  
-* [Install Packages](#Install Packages) 
-* [Overview](#Overview)
-    + [Input arguments for getCluster](#Input arguments for getCluster)
-    + [Output of getCluster](#Output of getCluster)
-* [Example on Clustering](#Example on Clustering)  
-* [Parallelism](#Parallelism)  
-* [Session Info](#Session Info)
-
-
-## <a id="introduction"></a> Introduction
+# Introduction
 
 Biological information encoded in the DNA sequene is often organized into
 independent modules or clusters. For instance, the eukaryotic system of
@@ -52,10 +59,10 @@ user defined search criteria. Such criteria include:
 * The order of features required within identified clusters
 * The distance required between identified clusters   
 * The strand(s) to build the clusters on  
-* The chromosome(s) to build the clusters on  
+* The seqname(s) to build the clusters on  
 
 
-## <a id="Dependencies"></a> Dependencies
+# Dependencies
 
 fcScan depends on the following packages:
 
@@ -69,36 +76,32 @@ fcScan depends on the following packages:
 * **VariantAnnotation**
 * **GenomicRanges**
 
-## <a id="Overview"></a> Overview
+# Overview
 
 fcScan finds clusters of genomic features based on user defined 
 parameters. Currently, it has one main function, the `getCluster`
 function.
 
 
-## <a id="Input arguments for getCluster"></a> Input arguments for getCluster
+# Input arguments for getCluster
 
-
->`clusters = getCluster(x = c("/path/to/file/a.bed","/path/to/file/b.bed"), w = 1500, c = c("a"=1,"b"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("a","b","b"))`
-
-
-### Input data (x)
+## Input data (x)
 The input for `getCluster` is given through the parameter `x`.
-This function takes BED and VCF files (compressed or not). Bed and vcf
+This function accept files in BED and VCF (compressed or not) formats. Bed and vcf
 files are loaded by packages `rtracklayer` and `VariantAnnotation` respectively.
 There is no limit on the number of files the user can define.
 
-Alternatively, `getCluster` accepts a data frame as input. In such case,
-the data frame should contain 5 columns in the order:
+Alternatively, `getCluster` accepts a data frame or a GRanges object as input.
+When data frame is given, it should contain the following "named" 5 columns:
 
-* **chr** : Contains the chromosome name
+* **seqnames** : Contains the seqname name
 * **start**: Contains start coordinates
 * **end**: Contains end coordinates
 * **strand**: Contains strand relative to each site
 * **site** : Contains the category name relative to genomic site
 
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
+df <- data.frame(seqnames = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
                  start = c(10, 17, 25, 27, 32, 41), 
                  end=c(15, 20, 30, 35, 40, 48),
                  strand = c("+", "+", "+", "+", "+", "+"),
@@ -107,20 +110,20 @@ df <- data.frame(chr = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
 knitr::kable(df)
 ```
 
-The *chr*, *start* and *end* columns are the relative position of each
+The *seqnames*, *start* and *end* columns are the relative position of each
 feature/site.
 The *site* column contains the ID of the site and will be used for clustering.
 *start* and *end* columns are numeric while the remaining columns are characters.
 
-### Window Size (w)
+## Window Size (w)
 Window size is set using `w`, and this parameter defines the `maximum` size of the
 clusters.
 
-### Condition (c)
+## Condition ( c)
 The clustering condition `c` defines the number and type of genomic data to 
 search for in each cluster based on the information in the `site` column
 `c = c("a" = 1, "b" = 2)`  
-This searches for clusters with 3 sites, One *TATA* and two  *GATA*.
+This searches for clusters with 3 sites, One *a* site and two  *b* sites.
 
 Another way of writing the condition is the following 
 `x = ("a.bed","b.bed"), c = c(1,2)`  
@@ -132,16 +135,15 @@ In case the input is a data frame (instead of files), the user needs to **explic
 define the site name along with the count relative to each site. 
 Giving the condition as `c = c(1,2)` for a data frame will not be allowed.  
 `x = dataFrame_of_sites, c = c("a" = 1, "b" = 2)` where `a`
- and `b` are valid site names in the `site` column.
- 
-### Chromosome (chr) and Strand (s)
-By default, clustering will be performed on both strands and all chromosomes
-unless specified by the user using the `s` and `chr` arguments to limit the
-search on a specific strand or chromosome.
+ and `b` are valid site names in the `site`
+## Seqnames (seqnames) and Strand (s)
+By default, clustering will be performed on both strands and all seqnames
+unless specified by the user using the `s` and `seqnames` arguments to limit the
+search on a specific strand or seqname.
 
-Users can choose to cluster on one specific chromosome `(chr = "chr1")`, or
-on more than one chromosome `(chr = c("chr1","chr3","chr4"))`  
-(Default of `chr` is **NULL**) meaning that clustering on all chromosomes 
+Users can choose to cluster on one specific seqname `(seqnames = "chr1")`, or
+on more than one seqname `(seqnames = c("chr1","chr3","chr4"))`  
+(Default of `seqnames` is **NULL**) meaning that clustering on all seqnames 
 will be performed.
 
 For `s`, the values allowed are: 
@@ -149,18 +151,17 @@ For `s`, the values allowed are:
 * **+** : Build clusters on positive strand
 * **-** : Build clusters on negative strand
 * **.** : Clusters are not strand specific  
-(Default for `s` is **.**)
-
-### Overlap (overlap)
-The gap/overlap between adjacent clusters can be controled using the `overlap`
-option.
+(Default is set to **.**)
+	
+## Overlap (overlap)
+The gap/overlap between adjacent clusters, and not sites, can be controled using
+the `overlap` option.
 When `overlap` is positive, adjacent clusters will be separated by a minimum
 of the given value.
 When `overlap` is negative, adjacent clusers will be allowed to overlap by a maximum
-of the given value.  
-(Default is **0**)
+of the given value. (Default is set to **0**)
 
-### Greedy vs Non-Greedy (greedy)
+## Greedy vs Non-Greedy (greedy)
 `greedy` allows the user to control the number of genomic features found 
 in clusters.
 
@@ -172,10 +173,10 @@ the condition will be labelled as *FALSE*.
 
 When `greedy = TRUE`, additional sites will be added to the cluster as
 long as the cluster size is below the defined  window size.
-(Default is **TRUE**)  
+(Default is set to **TRUE**)  
 
 
-### Order (order)
+## Order (order)
 The `order` option allows the user to define the specific order for the
 combination of sites required.  
 Given the order in the above example to be :
@@ -185,23 +186,21 @@ They can be a sub order of a larger cluster (i.e when greedy is TRUE) or simply 
 cluster containing these sites.
 For example if a cluster has "a, a, b, b, b" sites, this cluster has the required
 order (a, b, b) and therefore will be considered as a correct cluster.
-(Default is **NULL**)
+(Default is set to **NULL**)
 
-### Number of cores (n_cores)
+## Number of cores (n_cores)
 This parameter allows the user to control the number of cores used by 
 `getCluster` when using parallel.  
 
-This package uses parallelism by chromosome. One core will be allocated 
-per chromosome.
-
-(Default is **2**)
+This package uses parallelism by seqname. One core will be allocated 
+per seqname. (Default is set to **2**)
 
 
-## <a id="Output of getCluster"></a> Output of getCluster
+# Output of getCluster
 
 The output of `getCluster` is a GRanges object with fields:
 
-* **seqnames**: The chromosome on which a cluster is found
+* **seqnames**: The seqname on which a cluster is found
 * **ranges**: The ranges of the cluster
 * **strand**: The strand of the cluster, if any
 * **size**: The size of the cluster
@@ -222,21 +221,30 @@ a cluster that didn't satisfy the combination requirement and `orderFail` is a c
 that had the required combination but did not have the required order of sites.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
-than  in the condition parameter (`c`),  an error will be raised.
+than in the condition parameter (`c`),  an error will be raised.
 However, if `greedy = TRUE`, then using `order` with more values than the 
-condition paramerter is allowed since a greedy cluster may contain more 
+condition paramerter is allowed since the cluster may contain more 
 sites than the required `c` condition as long as the window size is satisfied.
 
 
-## <a id = "Example on Clustering"></a> Example on Clustering
+# Example on Clustering
 
-Following will be an example of how to use `getCluster` function.
+Example using `getCluster`:
 
+```{r, eval=FALSE} 
+x = data.frame(seqnames = rep("chr1", times = 16),
+	start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
+	end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
+	strand = rep("+", 16),
+	site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
 
+clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
+	greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
+```
 
-## <a id="Session Info"></a> Session Info
-
+# Session Info
 
 ```{r} 
 sessionInfo() 
 ``` 
+

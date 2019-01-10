@@ -3,7 +3,7 @@
 \title{Detect clusters of genomic features (i.e TFBS) in a specified window size
 and using user defined options}
 \usage{
-getCluster(x, w, c, overlap = 0, greedy = TRUE, chr = NULL, s = ".",
+getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = ".",
 order = NULL, n_cores = 2)
 
 }
@@ -30,10 +30,10 @@ satisfiying user defined categorical conditions.
             contain the exact combination of sites defined in "c".
             If TRUE, clusters containing the condition and more will
             be labeled as TRUE as long as window size is below or equal
-			the defined value. The default is set to TRUE}
+            the defined value. The default is set to TRUE}
 
-    \item{chr}{character; chromosome to cluster on. The default is set to
-                NULL so the clustering will be performed on all chromosomes}
+    \item{seqnames}{character; seqname/chromosome to cluster on. The default is set to
+                NULL so the clustering will be performed on all seqnames}
 
     \item{s}{character; Strand to cluster on. Can be "+", "-" or
                 ".". The default is set to "." which indicate both clusters}
@@ -57,12 +57,12 @@ maximum overlap allowed between clusters. If overlap is positive, this
 means that the clusters should have a minimum gap of the given value.
 
 The user can also choose to cluster on a specific strand by using the strand
-option, and specific chromosome by specifying the chromosome name as an
+option, and specific seqname by specifying the seqnames as an
 argument.
 
 \emph{x} is a vector of files or a data frame.
 When data frame is given as input, it should have 5 columns
-\emph{chr start end strand  site}. \emph{start} and \emph{end} column
+\emph{seqnames start end strand site}. \emph{start} and \emph{end} column
 need to be numeric or integer and the rest of the columns are of type
 character.
 
@@ -81,12 +81,13 @@ user defined order. Default is NULL.
 }
 
 \examples{
- x = data.frame(chr = c("chr1","chr2","chr1","chr1","chr2","chr2"),
- start = c(2,5,7,10,12,14),end = c(5,10,12,14,18,20),
- strand = c("+","+","+","+","+","+" ),
- site = c("s1", "s2", "s1","s2","s1", "s2"))
+x = data.frame(seqnames = rep("chr1", times = 16),
+start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
+end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
+strand = rep("+", 16),
+site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
 
-clusters = getCluster(x, w = 10, c = c("s1"=1,"s2"=2),
+clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
 greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
 
 }

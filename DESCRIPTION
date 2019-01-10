@@ -2,7 +2,7 @@ Package:fcScan
 Type: Package
 Title: fcScan for detecting clusters of coordinates with user defined options
 Version: 0.99.0
-biocViews: ComparativeGenomics
+biocViews: GenomeAnnotation
 Author: Pierre Khoueiry(pk17@aub.edu.lb) Ghiwa khalil(gk39@aub.edu.lb) 
 Maintainer: Pierre Khoueiry <pk17@aub.edu.lb>
 Description: Used to detect combination of genomic coordinates falling within
@@ -14,7 +14,7 @@ Description: Used to detect combination of genomic coordinates falling within
 License: Artistic-2.0
 Encoding: UTF-8
 LazyData: true
-Imports: parallel, doParallel, foreach, stats, utils, VariantAnnotation, rtracklayer, GenomicRanges, tools
-Suggests: BiocStyle, knitr, rmarkdown
+Imports: parallel, doParallel, foreach, stats, VariantAnnotation, SummarizedExperiment, rtracklayer, GenomicRanges, methods
 VignetteBuilder: knitr
+Suggests: BiocStyle, knitr, rmarkdown
 RoxygenNote: 6.1.0
