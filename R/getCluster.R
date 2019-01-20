@@ -113,7 +113,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, chr=NULL,
                            size = as.numeric(final[,"size"]),
                            isCluster = as.logical(final[,"isCluster"]),
                            id = paste("c", seq.int(nrow(final)), sep = ""),
-                           score = 1,
+                           score = 1, status = as.character(final[,"status"]),
                            stringsAsFactors = FALSE
                            )
     }
@@ -156,7 +156,7 @@ load_data <- function(all_files, c) {
         return(data_bed)
     }
     ## we have vcf files
-    else {
+    else{
         rownames(data_vcf) <- c()
         return(data_vcf)
     }
