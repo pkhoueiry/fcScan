@@ -65,6 +65,11 @@ usage of getCluster :
 * **foreach**
 * **stats**
 * **utils**
+* **VariantAnnotation**
+* **rtracklayer**
+* **matrixStats**
+* **GenomicRanges**
+* **tools**
 
 ## <a id="Overview"></a> Overview
 
@@ -76,7 +81,7 @@ function.
 ## <a id="Input arguments for getCluster"></a> Input arguments for getCluster
 
 
->`clusters = getCluster(x=c("~/project/fcScan/data/NANOG.bed","~/project/fcScan/data/TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("TATA","NANOG","NANOG"))`
+>`clusters = getCluster(x=c("NANOG.bed","TATA.bed"), w = 1500, c = c("NANOG"=1,"TATA"=2), greedy = TRUE, overlap = -5, s = "+", chr = "chr9",order = c("TATA","NANOG","NANOG"))`
 
 
 ### Input data (x)
@@ -190,7 +195,7 @@ This parameter allows the user to control the number of cores used by
 
 ## <a id="Output of getCluster"></a> Output of getCluster
 
-The output of `getCluster` is a data frame with fields containing:
+The output of `getCluster` is a Genomic Range object with fields containing:
 
 * **chr**: The chromosome on which a cluster is found
 * **start**: The start of the cluster
@@ -301,10 +306,11 @@ The results are stored in a data frame named clusters. *clusters* contains
 
 >`head(clusters)`
 
+
 ```{r, echo=FALSE, results='asis'}
-df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9","chr9"), 
-                 start = c(25818, 165838, 202789, 253853, 361625, 
-                           387687,5831141), 
+df <- data.frame(seqnames = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9","chr9"), 
+                 start = c(25819, 165839, 202790, 253854, 361626, 
+                           387689,5831142), 
                  end = c(25832, 165852, 202800, 253867, 361639,
                          387701,5846962), 
                  size = c("14", "14", "11", "14", "14", "14","15821"), 
@@ -313,15 +319,13 @@ df <- data.frame(chr = c("chr9", "chr9", "chr9", "chr9", "chr9", "chr9","chr9"),
                  strand = c("+", "+", "+", "+", "+", "+","+"), 
                  isCluster = c("FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
                                "FALSE","FALSE"),
-                  status = c("combnFail", "combnFail", "combnFail", 
-                    "combnFail", "combnFail", "combnFail","orderFail"),
                  id = c("c1", "c2", "c3", "c4", "c5", "c6","c94"),
                     score = c(1, 1, 1, 1, 1, 1,1))
 
 knitr::kable(df)
 ```
 
-The resulting data frame will contain the *TRUE* and *FALSE* labelled 
+The resulting GRanges object will contain the *TRUE* and *FALSE* labelled 
 clusters as well as the reason why the clustering (status column) failed.
 To get only the cluster labelled by *TRUE* We can subset by the following:
     
@@ -331,20 +335,19 @@ To get only the cluster labelled by *TRUE* We can subset by the following:
 
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(chr = c("chr9"), 
-                 start = c(83497976), 
+                 start = c(83497977), 
                  end = c(83517867), 
                  size = c(19891), 
                  site = c("TATA_known2,TATA_known2,TATA_known2,NANOG_known1,NANOG_known1"), 
                  strand = c("+"),
                 isCluster = c("TRUE"), 
-                 status = c("PASS"),
                  id = c("c882"),
                  score = c("1"))
 
 knitr::kable(df)
 ```
 
-*clusters_TRUE* contains 20 observations with 10 variables.
+*clusters_TRUE* contains 1 observation.
 
 ### Clustering using a data frame as input
 Alternatively, we can call getCluster by using as input preformatted bed
