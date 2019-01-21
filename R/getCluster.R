@@ -106,7 +106,7 @@ be explicitly defined")
     if (class(final) == "character") {
         final = t(final)
     }
-
+    
     if (nrow(final) != 0) {
         final = data.frame(seqnames = as.character(final[,"seqnames"]),
                            start = as.numeric(final[,"start"]),

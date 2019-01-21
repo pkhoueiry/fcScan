@@ -11,7 +11,7 @@ Description: Used to detect combination of genomic coordinates falling within
     clusters are built on a specific chromosome or specific strand. 
     Clustering can be performed with a “greedy” option allowing thus
     the presence of additional sites within the allowed window size.
-License: Artistic-2.0
+License: GNU General Public License v3.0
 Encoding: UTF-8
 LazyData: true
 Imports: parallel, doParallel, foreach, stats, VariantAnnotation, SummarizedExperiment, rtracklayer, GenomicRanges, methods
