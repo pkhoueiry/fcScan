@@ -13,6 +13,12 @@ The below R packages are required for installation:
 + foreach
 + stats
 + utils
++ VariantAnnotation
++ rtracklayer
++ matrixStats
++ GenomicRanges
++ tools
+
 
 Installation
 ------------
