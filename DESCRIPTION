@@ -3,8 +3,8 @@ Type: Package
 Title: fcScan for detecting clusters of coordinates with user defined options
 Version: 0.99.0
 biocViews: GenomeAnnotation
-Author: Pierre Khoueiry(pk17@aub.edu.lb) Ghiwa khalil(gk39@aub.edu.lb) 
-Maintainer: Pierre Khoueiry <pk17@aub.edu.lb>
+Author: Pierre Khoueiry(pk17@aub.edu.lb) Ghiwa khalil(gk39@aub.edu.lb) Georges Khazen (GKhazen@lau.edu.lb)
+Maintainer: Pierre Khoueiry <pk17@aub.edu.lb> Georges Khazen (GKhazen@lau.edu.lb)
 Description: Used to detect combination of genomic coordinates falling within
     a user defined window size along with user defined overlap between
     identified neighboring clusters. Can be used for genomic data where the
