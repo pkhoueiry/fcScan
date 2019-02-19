@@ -1,4 +1,4 @@
-test_fcScan <- function() {
+test_getCluster <- function() {
     clusters <- GRanges(seqnames = c("chr1","chr1","chr1","chr1","chr1","chr1","chr1"
                                      ,"chr1","chr1","chr1","chr1","chr1","chr1"), 
                   ranges= IRanges(start= c(11,18,26,48,61,71,88,95,100,108,114,122,133),
