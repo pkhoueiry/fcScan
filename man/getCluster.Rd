@@ -101,4 +101,6 @@ The returned value is a GRanges object containing the clusters.
   Pierre Khoueiry
 
   Ghiwa Khalil
+  
+  Georges Khazen
 }
