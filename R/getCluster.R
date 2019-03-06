@@ -5,7 +5,7 @@
 globalVariables(c("parOut","s","site","strand"))
 
 getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
-                      s="." , order=NULL, n_cores=2) {
+                      s="." , order=NULL) {
 
     start.time = Sys.time()
 
@@ -87,12 +87,9 @@ be explicitly defined")
 
     unique_seqnames = unique(x$seqnames)
 
-    cl <- makeCluster(n_cores)
-    registerDoParallel(cl)
-
     final = foreach(parOut = seq_along(unique_seqnames) ,
                     .export = c("testCombn","cluster_sites"),
-                    .combine = rbind) %dopar% {
+                    .combine = rbind) %do% {
                         df = subset(x, seqnames == unique_seqnames[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
@@ -123,7 +120,6 @@ be explicitly defined")
     
     final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
     final$width = width(final)
-    stopCluster(cl)
     end.time = Sys.time()
     print(end.time - start.time)
     return(final)
