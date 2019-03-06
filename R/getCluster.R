@@ -5,7 +5,7 @@
 globalVariables(c("parOut","s","site","strand"))
 
 getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
-                      s="." , order=NULL, n_cores=2) {
+                      s="." , order=NULL) {
 
     start.time = Sys.time()
 
@@ -62,8 +62,8 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     }
 
     n = sum(c)
-    res = array(data = NA, dim = c(nrow(x), ncol = 8))
-    colnames(res) = c("seqnames", "start", "end", "size", "site", "strand",
+    res = array(data = NA, dim = c(nrow(x), ncol = 7))
+    colnames(res) = c("seqnames", "start", "end", "site", "strand",
                       "isCluster", "status")
     ##getting sites found on the required seqnamesom
     if (length(seqnames) > 0) {
@@ -87,12 +87,9 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
 
     unique_seqnames = unique(x$seqnames)
 
-    cl <- makeCluster(n_cores)
-    registerDoParallel(cl)
-
     final = foreach(parOut = seq_along(unique_seqnames) ,
                     .export = c("testCombn","cluster_sites"),
-                    .combine = rbind) %dopar% {
+                    .combine = rbind) %do% {
                         df = subset(x, seqnames == unique_seqnames[parOut])
                         df = df[order(df$start), ]
                         if (nrow(df) >= n) {
@@ -111,7 +108,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         final = data.frame(seqnames = as.character(final[,"seqnames"]),
                            start = as.numeric(final[,"start"]),
                            end = as.numeric(final[,"end"]),
-                           size = as.numeric(final[,"size"]),
+                           strand = (final[,"strand"]),
                            isCluster = as.logical(final[,"isCluster"]),
                            id = paste("c", seq.int(nrow(final)), sep = ""),
                            status = as.character(final[,"status"]),
@@ -122,8 +119,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     }
     
     final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
-    
-    stopCluster(cl)
+    final$width = width(final)
     end.time = Sys.time()
     print(end.time - start.time)
     return(final)
@@ -201,7 +197,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         res[i, "seqnames"] <- as.character(df$seqnames[i])
         res[i, "start"] <- start[i]
         res[i, "end"] <- end
-        res[i, "size"] <- end - start[i]
         res[i, "strand"] <- s
         res[i, "status"] <- ans$status
         if (greedy == TRUE) {
@@ -218,14 +213,6 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
 
 testCombn <- function(ls, c, order) {
     ans <- list()
-
-    for (key in names(c)) {
-        if (sum((ls == key)) < c[key]) {
-            ans$logical = FALSE
-            ans$status = "combnFail"
-            return(ans)
-        }
-    }
 
     if(is.null(order)){ ##order doesnt matter
         ans$logical = TRUE
