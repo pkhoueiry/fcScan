@@ -17,8 +17,8 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     ## Checking input format
     if (is(x, "data.frame")) {
         if (is.null(names(c))) {
-            stop("When input is a data frame, names of sites in condition must 
-be explicitly defined")
+            stop("When input is a data frame or GRanges object, site names
+ in condition must be explicitly defined")
         }
     } else if (is(x, "GRanges")){
         x <- as.data.frame(x)
@@ -231,7 +231,7 @@ testCombn <- function(ls, c, order) {
         ans$logical = TRUE
         ans$status = "PASS"
     } else{
-        if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE)
+        if(grepl(paste(order,collapse=";"), paste(ls,collapse=";")) == TRUE)
         {
             ans$logical = TRUE
             ans$status = "PASS"
