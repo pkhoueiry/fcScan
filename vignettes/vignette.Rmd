@@ -14,7 +14,7 @@ author:
 vignette: >
   %\VignetteIndexEntry{fcScan}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UT8}
+  %\VignetteEncoding{UTF8}
 output: BiocStyle::html_document
 ---
 
