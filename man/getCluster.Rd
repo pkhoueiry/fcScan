@@ -3,8 +3,8 @@
 \title{Detect clusters of genomic features (i.e TFBS) in a specified window size
 and using user defined options}
 \usage{
-getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = ".",
-order = NULL, n_cores = 2)
+getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = "*",
+order = NULL, verbose = FALSE)
 
 }
 \description{
@@ -36,14 +36,16 @@ satisfiying user defined categorical conditions.
                 NULL so the clustering will be performed on all seqnames}
 
     \item{s}{character; Strand to cluster on. Can be "+", "-" or
-                ".". The default is set to "." which indicate both clusters}
+                "*". The default is set to "*" which indicate both clusters}
 
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contain. By default it is
                         set to NULL}
+	\item{verbose}{logical; A If FALSE, only clusters that passed
+                        combination condition are shown. used for
+                        debugging purposes. By default it is
+                        set to FALSE}
 
-    \item{n_cores}{numeric; The number of cores to be used in parallel.
-                    By default it is set to 2 cores}
 }
 
 \details{
@@ -98,9 +100,9 @@ The returned value is a GRanges object containing the clusters.
 }
 
 \author{
-  Pierre Khoueiry
+  Pierre Khoueiry  
 
-  Ghiwa Khalil
+  Ghiwa Khalil  
   
-  Georges Khazen
+  Georges Khazen  
 }
