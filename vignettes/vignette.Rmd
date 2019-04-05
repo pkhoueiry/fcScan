@@ -5,6 +5,10 @@ author:
   affiliation: 
   - &id1 American University of Beirut, Beirut, Lebanon
   email: pk17@aub.edu.lb
+- name: Abdallah El-Kurdi
+  affiliation: 
+  - *id1
+  email: ak161@aub.edu.lb
 - name: Ghiwa Khalil
   affiliation: 
   - *id1
@@ -220,11 +224,10 @@ The algorithm returns all clusters containing the correct count of
 sites/features. If the combination, overlap, and order options are satisfied,
 the cluster is considered a `TRUE` cluster. 
 
-*status* of a cluster might be either PASS, combnFail, or orderFail.
-`PASS` is a cluster that satisfied the order and combination. `combnFail` is
-a cluster that didn't satisfy the combination requirement and `orderFail` 
-is a cluster that had the required combination but did not have the required
-order of sites.
+*status* of a cluster might be either PASS or orderFail.
+`PASS` is a cluster that satisfied the desired order and combination.
+`orderFail` is a cluster that had the required combination but did not
+have the required order of sites.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
 than in the condition parameter (`c`),  an error will be raised.

@@ -15,7 +15,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     }
 
     ## Checking input format
-    if (is(x, "data.frame")) {
+    if (is(x, "data.frame") || is(x, "GRanges")) {
         ## print("data.frame input")
         if (is.null(names(c))) {
             stop("When input is a data frame or GRanges object, site names
@@ -97,17 +97,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     colnames(res) = c("seqnames", "start", "end", "site", "strand",
                       "isCluster", "status")
 
-    ## final = foreach(parOut = seq_along(unique_seqnames),
-    ##                 .export = c("testCombn","cluster_sites"),
-    ##                 .combine = rbind) %do% {
-    ##                     df = subset(x, seqnames == unique_seqnames[parOut])
-    ##                     df = df[order(df$start), ]
-    ##                     if (nrow(df) >= n) {
-    ##                         result = cluster_sites(df, w, c, overlap, n,
-    ##                                                res, s, greedy, order)
-    ##                     }
-    ##                 }
-
     final = data.frame()
     
     ## looping over chromosomes 
@@ -130,10 +119,21 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         final = t(final)
     }
 
-
-    if(!verbose) {
-        final = subset(final, status != "combnFail")
+    #check verbose input argument
+    if( !(verbose %in% c("TRUE", "FALSE"))) {
+        stop("verbose should be TRUE or FALSE")
     }
+
+    #if verbose is FALSE, get only clusters with "PASS"
+    if(verbose == FALSE) {
+        final = subset(final, final$status == "PASS")
+    }
+
+    #if TRUE, get everything
+    if(verbose == TRUE) {
+        final
+    }
+
     
     if (nrow(final) != 0) {
         final = data.frame(seqnames = as.character(final[,"seqnames"]),
@@ -146,7 +146,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
                            stringsAsFactors = FALSE
                            )
 
-        ## write.table(final, "~/tmp/final.txt")
+        #write.table(final, "~/tmp/final.txt")
         final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE,
                                       starts.in.df.are.0based = TRUE)
     }else{
@@ -179,8 +179,8 @@ load_data <- function(all_files, c) {
 
 
 cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
-    start <- df$start
-    e <- df$end
+    start_site <- df$start
+    end_site <- df$end
     site <- df$site
 
     isCluster <- FALSE
@@ -194,30 +194,30 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ## check for overlap. basically, the first new
         ## site should satisfy the overlap condition
         if (greedy == TRUE) {
-            if (e[i] > start[i] + w) {
+            if (end_site[i] > start_site[i] + w) {
                 next
             }
         }
         ## 
         if (isCluster) {
-            if ((start[i] - end) < overlap) {
+            if ((start_site[i] - end) < overlap) {
                 next
             } else {
                 isCluster = FALSE
             }
         }
         if (greedy == TRUE) {
-            end = df$end[df$end <= start[i] + w & df$end >= e[i]]
+            end = df$end[df$end <= start_site[i] + w & df$end >= end_site[i]]
             end = end[length(end)]
             iEnd = which(df$end == end)[1]
             ls <- site[i:iEnd]
         }
         else {
-            end = max((e[i:(i + n - 1)]))
+            end = max((end_site[i:(i + n - 1)]))
         }
         ## putative cluster is bigger than window
         if (greedy == FALSE) {
-            if ((end - start[i]) > w) {
+            if ((end - start_site[i]) > w) {
                 next
             } else {
                 ls <- site[i:(i + n - 1)]
@@ -227,9 +227,15 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         ## checking if required sites are present
         ans <- testCombn(ls, c, order)
         isCluster = ans$logical
+        status = ans$status
+
+        # if we get combnFail, skip
+        if(status == "combnFail"){
+            next
+        }
 
         res[i, "seqnames"] <- as.character(df$seqnames[i])
-        res[i, "start"] <- start[i]
+        res[i, "start"] <- start_site[i]
         res[i, "end"] <- end
         res[i, "strand"] <- s
         res[i, "status"] <- ans$status
@@ -279,8 +285,3 @@ testCombn <- function(ls, c, order) {
     }
     return(ans)
 }
-
-
-
-
-

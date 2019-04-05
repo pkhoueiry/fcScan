@@ -1,6 +1,5 @@
 exportPattern("getCluster")
 importFrom(foreach, "foreach")
-importFrom(foreach, "%do%")
 importFrom(stats, "complete.cases")
 importFrom(rtracklayer, "import")
 importFrom(SummarizedExperiment,"rowRanges")
