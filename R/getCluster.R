@@ -119,17 +119,17 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         final = t(final)
     }
 
-    #check verbose input argument
+    ##check verbose input argument
     if( !(verbose %in% c("TRUE", "FALSE"))) {
         stop("verbose should be TRUE or FALSE")
     }
 
-    #if verbose is FALSE, get only clusters with "PASS"
+    ##if verbose is FALSE, get only clusters with "PASS"
     if(verbose == FALSE) {
         final = subset(final, final$status == "PASS")
     }
 
-    #if TRUE, get everything
+    ##if TRUE, get everything
     if(verbose == TRUE) {
         final
     }
@@ -146,7 +146,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
                            stringsAsFactors = FALSE
                            )
 
-        #write.table(final, "~/tmp/final.txt")
         final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE,
                                       starts.in.df.are.0based = TRUE)
     }else{
@@ -229,7 +228,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         isCluster = ans$logical
         status = ans$status
 
-        # if we get combnFail, skip
+        ## if we get combnFail, skip
         if(status == "combnFail"){
             next
         }
