@@ -196,9 +196,6 @@ For example if a cluster has "a, a, b, b, b" sites, this cluster has the
 required order (a, b, b) and therefore will be considered as a correct
 cluster if greedy is TRUE. (Default is set to **NULL**)
 
-This package uses parallelism by seqname. One core will be allocated 
-per seqname. (Default is set to **2**)
-
 ## Verbose (verbose)
 The `verbose` option allows the printing of additional messages and the
 list of clusters that failed for lack of correct combination of sites.
