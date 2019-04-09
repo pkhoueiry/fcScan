@@ -8,8 +8,6 @@ Dependencies
 
 The below R packages are required for installation:
 
-+ parallel
-+ doParallel
 + foreach
 + stats
 + utils
