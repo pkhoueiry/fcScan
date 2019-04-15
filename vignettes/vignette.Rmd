@@ -124,7 +124,7 @@ characters.
 Window size is set using `w`, and this parameter defines the `maximum` size of
 the clusters.
 
-## Condition (c)
+## Condition &#40;c)
 The clustering condition `c` defines the number and type of genomic data to 
 search for in each cluster based on the information in the `site` column
 `c = c("a" = 1, "b" = 2)`  
