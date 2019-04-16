@@ -8,9 +8,9 @@ order = NULL, verbose = FALSE)
 
 }
 \description{
-Given a data frame or bed/vcf files, this function will look for
-clusters of genomic features found within a user defined window size and
-satisfiying user defined categorical conditions.
+Given a data frame or a GRanges object or a list of bed/vcf files, this
+function will look for clusters of genomic features found within a user
+defined window size and satisfiying user defined categorical conditions.
 }
 
 \arguments{
@@ -100,7 +100,9 @@ The returned value is a GRanges object containing the clusters.
 }
 
 \author{
-  Pierre Khoueiry  
+  Pierre Khoueiry
+
+  Abdallah El-Kurdi
 
   Ghiwa Khalil  
   
