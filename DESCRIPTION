@@ -9,7 +9,7 @@ Description: This package is used to detect combination of genomic coordinates f
 License: Artistic 2.0
 Encoding: UTF-8
 LazyData: true
-Imports: foreach, stats, VariantAnnotation, SummarizedExperiment, rtracklayer, GenomicRanges, methods
+Imports: stats, VariantAnnotation, SummarizedExperiment, rtracklayer, GenomicRanges, methods
 VignetteBuilder: knitr
 Suggests: RUnit, BiocGenerics, BiocStyle, knitr, rmarkdown
 RoxygenNote: 6.1.0
