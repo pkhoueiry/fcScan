@@ -22,7 +22,7 @@ Installation
 2. From the terminal run `R CMD build fcScan`
 3. Run `R CMD check fcScan_0.99.0.tar.gz`
 4. Run  `R CMD BiocCheck fcScan_0.99.0.tar.gz`
-5. Intsall package by `R CMD INSTALL fcScan_0.99.0.tar.gz`
+5. Install package by `R CMD INSTALL fcScan_0.99.0.tar.gz`
 6. Start R and load library using `library(fcScan)`
 
 
