@@ -55,7 +55,11 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         stop("Only positive integers allowed")
     }
 
-        exclusion <- which(c==0)
+    if(!(is.numeric(overlap))){
+        stop("Only integers allowed")
+    }
+
+    exclusion <- which(c==0)
 
     if(length(exclusion)!=0){
         exc_sites <- names(exclusion)
