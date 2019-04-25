@@ -52,8 +52,10 @@ defined window size and satisfiying user defined categorical conditions.
 The function \emph{getCluster} will cluster coordinates based on a user defined
 number of sites and window size.
 The user needs to specify the condition for clustering, which is the
-sites and the number of sites required in each cluster. The user can
-also set the distance required between consective clusters using the
+sites and the number of sites required in each cluster. The user can exclude 
+sites from clusters. this should be specified also in the condition for
+clustering.
+the user can also set the distance required between consective clusters using the
 overlap argument. If overlap is a negative, this will represent the
 maximum overlap allowed between clusters. If overlap is positive, this
 means that the clusters should have a minimum gap of the given value.

@@ -143,6 +143,10 @@ Giving the condition as `c = c(1,2)` for a data frame or GRanges will not be all
 `x = dataFrame_of_sites, c = c("a" = 1, "b" = 2)` where `a`
  and `b` are valid site names in the `site`
 
+Users can exclude sites from their cluster. this is specified by zero `0`
+ in the condition as `c = c("a" = 1, "b" = 2, "c" = 0)`, meaning that if any cluster
+ contains "c" site will not be considered as cluster.
+
 ## Seqnames (seqnames) and Strand (s).
 By default, clustering will be performed on both strands and on all seqnames
 unless specified by the user using the `s` and `seqnames` arguments to limit the
@@ -217,10 +221,12 @@ The algorithm returns all clusters containing the correct count of
 sites/features. If the combination, overlap, and order options are satisfied,
 the cluster is considered a `TRUE` cluster. 
 
-*status* of a cluster might be either PASS or orderFail.
+*status* of a cluster might be either PASS, ExcludedSites or orderFail.
 `PASS` is a cluster that satisfied the desired order and combination.
 `orderFail` is a cluster that had the required combination but did not
 have the required order of sites.
+`ExcludedSites` is a cluster that had the required order and combination but
+ but it has excluded sites.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
 than in the condition parameter (`c`),  an error will be raised.
