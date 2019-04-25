@@ -124,8 +124,8 @@ t12 = GRanges(
 x4 = data.frame(seqnames = rep("chr1", times = 6),
                start = c(10,17,25,40,42,55),
                end = c(15,20,30,50,56,70),
-               strand = c("+", "-", "-", "-", "-", "+"),
-               site = c("s1","s2","s2","s2","s1","s1"))
+               strand = c("+", "+", "+", "+", "+", "+"),
+               site = c("s1","s2","s3","s2","s1","s3"))
 
 t13 = GRanges(
     seqnames = Rle("chr1", 2),
@@ -134,6 +134,15 @@ t13 = GRanges(
     sites = as.character(c("s1,s2", "s2,s1")),
     isCluster = as.logical(Rle(TRUE, 2)),
     status = as.character(Rle("PASS", 2))
+)
+
+t14 = GRanges(
+    seqnames = Rle("chr1", 1),
+    ranges = IRanges(c(11L), end = c(30L)),
+    strand = Rle("*", 1),
+    sites = as.character(c("s1,s2,s3")),
+    isCluster = as.logical(Rle(FALSE, 1)),
+    status = as.character(Rle("ExcludedSites", 1))
 )
 
 
@@ -164,7 +173,10 @@ test_getCluster <- function() {
     checkEquals(getCluster(x1, w = 10, c = c("s1" = 1, "s2" = 1), greedy = FALSE, overlap = 6, verbose = TRUE), t11)
     #test t12 - get two clusters regardless of strand information#
     checkEquals(getCluster(x3, w = 16, c = c("s1" = 1, "s2" = 1), greedy = TRUE, overlap = -2, verbose = TRUE), t12)
-    #test t13 - regardless of strand information
+    #test t13 - regardless of strand information#
     checkEquals(getCluster(x3, w = 16, c = c("s1" = 1, "s2" = 1), greedy = TRUE, verbose = TRUE), t13)
+    #test t14 - get clusters of s1 and s3 sites with s2 excluded#
+    checkEquals(getCluster(x4, w = 20, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, verbose = TRUE), t14)
+    
 
 }

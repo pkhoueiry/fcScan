@@ -14,6 +14,9 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         stop("A data frame, Granges object or input files are needed")
     }
 
+    exclusion <- NULL
+    exc_sites <- NULL
+
     ## Checking input format
     if (is(x, "data.frame") || is(x, "GRanges")) {
         ## print("data.frame input")
@@ -21,6 +24,8 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
             stop("When input is a data frame or GRanges object, site names
  in condition must be explicitly defined")
         }
+        
+
     } else if (is(x, "GRanges")){
         ## print("GRanges input")
         x <- as.data.frame(x)
@@ -29,14 +34,32 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         if (length(c) != length(x))
             stop("Condition and files should be of same length")
         
+        if(length(which(names(c)=="")>0)){
+            stop("You either give names to all conditions or leave them empty")
+        }
+
+        
         ##assigning names to condition if null
         if (is.null(names(c))) {
             names(c) = seq(from = 1,to = length(c),by = 1)
         }
-        
+
         x = load_data(all_files = x, c = c)
     }
     
+    if(length(which(duplicated(names(c))))!=0){
+        stop("No duplicate conditions allowed - use only one instance for each condition")
+    }
+
+    if(length(which(c<0))!=0 | !(is.numeric(c))){
+        stop("Only positive integers allowed")
+    }
+
+        exclusion <- which(c==0)
+
+    if(length(exclusion)!=0){
+        exc_sites <- names(exclusion)
+    }
     
     ## Test if window is a positive integer
     if (w < 0 | w%%1!=0)
@@ -88,8 +111,14 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
 
     ##need to subset to keep only the sites required by the user,
     ##if the user wants sites "a","b" and input has "a", "b" and "c", we subset to get sites "a", "b"
+    if(!(is.null(exc_sites))){
+        x
+    }
+    
+    else{
     x = subset(x, site %in% names(c))
-
+    }
+    
     unique_seqnames = unique(x$seqnames)
 
     ## creating an array to fill results
@@ -107,7 +136,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
 
         if (nrow(df) >= n) {
             result = cluster_sites(df, w, c, overlap, n,
-                                   res, s, greedy, order)
+                                   res, s, greedy, order, exc_sites)
             final = rbind(final, result)
         }
     }
@@ -133,7 +162,6 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     if(verbose == TRUE) {
         final
     }
-
     
     if (nrow(final) != 0) {
         final = data.frame(seqnames = as.character(final[,"seqnames"]),
@@ -177,10 +205,11 @@ load_data <- function(all_files, c) {
 }
 
 
-cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
+cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order, exc_sites) {
     start_site <- df$start
     end_site <- df$end
     site <- df$site
+    exclusion_ls <- exc_sites
 
     isCluster <- FALSE
 
@@ -224,7 +253,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
         }
 
         ## checking if required sites are present
-        ans <- testCombn(ls, c, order)
+        ans <- testCombn(ls, c, order, exc_sites)
         isCluster = ans$logical
         status = ans$status
 
@@ -257,8 +286,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order) {
     return(res)
 }
 
-
-testCombn <- function(ls, c, order) {
+testCombn <- function(ls, c, order, exc_sites) {
     ans <- list()
 
     for (key in names(c)) {
@@ -282,5 +310,15 @@ testCombn <- function(ls, c, order) {
             ans$status = "orderFail"
         }
     }
+    
+    if(!(is.null(exc_sites))){
+        for (exc_site in exc_sites){
+            if(length(grep(exc_site, ls, value = TRUE))>0){
+            ans$logical = FALSE
+            ans$status = "ExcludedSites"
+        }
+      }
+    }
+    
     return(ans)
 }
