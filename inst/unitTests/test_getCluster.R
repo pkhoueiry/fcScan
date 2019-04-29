@@ -145,6 +145,44 @@ t14 = GRanges(
     status = as.character(Rle("ExcludedSites", 1))
 )
 
+t15 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(c(11L, 18L), end = c(30L, 30L)),
+    strand = Rle("*", 2),
+    sites = as.character(c("s1,s2,s3", "s2,s3")),
+    isCluster = as.logical(c(FALSE,TRUE)),
+    status = as.character(c("ExcludedSites", "PASS"))
+)
+
+x5 = data.frame(seqnames = rep("chr1", times = 10),
+               start = c(10,17,25,40,42,55,72,75,90,95),
+               end = c(15,20,30,50,56,70,80,89,100,115),
+               strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+"),
+               site = c("s1","s2","s3","s2","s1","s3","s1","s3","s2","s1"))
+
+t16 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(c(11L, 18L), end = c(50L, 56L)),
+    strand = Rle("*", 2),
+    sites = as.character(c("s1,s2,s3,s2", "s2,s3,s2,s1")),
+    isCluster = as.logical(c(FALSE, FALSE)),
+    status = as.character(c("ExcludedSites", "ExcludedSites"))
+)
+
+x6 = data.frame(seqnames = rep("chr1", times = 10),
+               start = c(10,17,25,40,42,55,72,75,90,95),
+               end = c(15,20,30,50,56,70,80,89,100,112),
+               strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+"),
+               site = c("s1","s2","s2","s3","s1","s3","s1","s2","s2","s1"))
+
+t17 = GRanges(
+    seqnames = Rle("chr1", 3),
+    ranges = IRanges(c(11L, 18L, 73L), end = c(50L, 56L, 112L)),
+    strand = Rle("*", 3),
+    sites = as.character(c("s1,s2,s2,s3", "s2,s2,s3,s1", "s1,s2,s2,s1")),
+    isCluster = as.logical(c(FALSE, FALSE, TRUE)),
+    status = as.character(c("ExcludedSites", "ExcludedSites", "PASS"))
+)
 
 test_getCluster <- function() {
     #general test t1#
@@ -177,6 +215,12 @@ test_getCluster <- function() {
     checkEquals(getCluster(x3, w = 16, c = c("s1" = 1, "s2" = 1), greedy = TRUE, verbose = TRUE), t13)
     #test t14 - get clusters of s1 and s3 sites with s2 excluded#
     checkEquals(getCluster(x4, w = 20, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, verbose = TRUE), t14)
-    
-
+    #test t15 - get one TRUE cluster and one with excluded sites#
+    checkEquals(getCluster(x4, w = 20, c = c("s1" = 0, "s2" = 1, "s3" = 1), greedy = TRUE, verbose = TRUE), t15)
+    #test t16 - get two ExcludedSites#
+    checkEquals(getCluster(x5, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), greedy = TRUE, verbose = TRUE), t16)
+    #test t17 - similar to t16 but Greedy = FALSE
+    checkEquals(getCluster(x5, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), greedy = FALSE, verbose = TRUE), NULL)
+    #test t18 - get three consecutive ExcludedSites and One TRUE cluster#
+    checkEquals(getCluster(x6, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), order = c("s1", "s2", "s2"), greedy = TRUE, verbose = TRUE), t17)
 }
