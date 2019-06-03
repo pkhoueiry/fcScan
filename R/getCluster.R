@@ -150,7 +150,7 @@ in condition must be explicitly defined")
     row.names(final) <- NULL
 
     ## if we have only one row the class will be a character
-    if (class(final) == "character") {
+    if (is.character(final)) {
         final = t(final)
     }
 

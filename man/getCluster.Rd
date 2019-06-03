@@ -1,7 +1,7 @@
 \name{getCluster}
 \alias{getCluster}
-\title{Detect clusters of genomic features (i.e TFBS) in a specified window size
-and using user defined options}
+\title{Detect clusters of genomic features (i.e TFBS) in a specified window 
+size and using user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = "*",
 order = NULL, verbose = FALSE)
@@ -32,8 +32,9 @@ defined window size and satisfiying user defined categorical conditions.
             be labeled as TRUE as long as window size is below or equal
             the defined value. The default is set to TRUE}
 
-    \item{seqnames}{character; seqname/chromosome to cluster on. The default is set to
-                NULL so the clustering will be performed on all seqnames}
+    \item{seqnames}{character; seqname/chromosome to cluster on. 
+    The default is set to NULL so the clustering 
+    will be performed on all seqnames}
 
     \item{s}{character; Strand to cluster on. Can be "+", "-" or
                 "*". The default is set to "*" which indicate both clusters}
@@ -41,7 +42,7 @@ defined window size and satisfiying user defined categorical conditions.
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contain. By default it is
                         set to NULL}
-	\item{verbose}{logical; A If FALSE, only clusters that passed
+    \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is
                         set to FALSE}
@@ -55,8 +56,8 @@ The user needs to specify the condition for clustering, which is the
 sites and the number of sites required in each cluster. The user can exclude 
 sites from clusters. this should be specified also in the condition for
 clustering.
-the user can also set the distance required between consective clusters using the
-overlap argument. If overlap is a negative, this will represent the
+the user can also set the distance required between consective clusters using 
+the overlap argument. If overlap is a negative, this will represent the
 maximum overlap allowed between clusters. If overlap is positive, this
 means that the clusters should have a minimum gap of the given value.
 
@@ -89,7 +90,8 @@ x = data.frame(seqnames = rep("chr1", times = 16),
 start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
 end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
 strand = rep("+", 16),
-site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
+site = c("s1","s2","s2","s1","s2","s1","s1","s2",
+"s1","s2","s2","s1","s2","s1","s1","s2"))
 
 clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
 greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
@@ -102,11 +104,12 @@ The returned value is a GRanges object containing the clusters.
 }
 
 \author{
-  Pierre Khoueiry
 
-  Abdallah El-Kurdi
+    Abdallah El-Kurdi
 
-  Ghiwa Khalil  
-  
-  Georges Khazen  
+    Ghiwa Khalil  
+
+    Georges Khazen
+
+    Pierre Khoueiry
 }
