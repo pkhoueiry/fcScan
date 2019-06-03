@@ -2,23 +2,23 @@
 title: "fcScan: feature clustering Scan"
 author:
 - name: Abdallah El-Kurdi
-    affiliation: 
-    - *id1
-    email: ak161@aub.edu.lb
+  affiliation: 
+  - &id1 American University of Beirut, Beirut, Lebanon
+  email: ak161@aub.edu.lb
 - name: Ghiwa Khalil
-    affiliation: 
-    - *id1
+  affiliation: 
+  - *id1
 - name: Georges Khazen
-    affiliation: Lebanese American University, Byblos, Lebanon
-    email: gkhazen@lau.edu.lb
+  affiliation: Lebanese American University, Byblos, Lebanon
+  email: gkhazen@lau.edu.lb
 - name: Pierre Khoueiry
-    affiliation: 
-    - &id1 American University of Beirut, Beirut, Lebanon
-    email: pk17@aub.edu.lb
+  affiliation: 
+  - *id1
+  email: pk17@aub.edu.lb
 vignette: >
-    %\VignetteIndexEntry{fcScan}
-    %\VignetteEngine{knitr::rmarkdown}
-    %\VignetteEncoding{UTF8}
+  %\VignetteIndexEntry{fcScan}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF8}
 output: BiocStyle::html_document
 ---
 
