@@ -1,10 +1,6 @@
 ---
 title: "fcScan: feature clustering Scan"
 author:
-- name: Pierre Khoueiry
-  affiliation: 
-  - &id1 American University of Beirut, Beirut, Lebanon
-  email: pk17@aub.edu.lb
 - name: Abdallah El-Kurdi
   affiliation: 
   - *id1
@@ -15,6 +11,10 @@ author:
 - name: Georges Khazen
   affiliation: Lebanese American University, Byblos, Lebanon
   email: gkhazen@lau.edu.lb
+- name: Pierre Khoueiry
+  affiliation: 
+  - &id1 American University of Beirut, Beirut, Lebanon
+  email: pk17@aub.edu.lb
 vignette: >
   %\VignetteIndexEntry{fcScan}
   %\VignetteEngine{knitr::rmarkdown}
@@ -57,10 +57,10 @@ for the presence of a combination of transcription factor binding sites or
 enriched for the presence of mutations often referred as regions with increase
 mutational hotspots.
 
-fcScan is designed to detect clusters of genomic features, as mentioned aboved,
+fcScan is designed to detect clusters of genomic features,
 based on user defined search criteria. Such criteria include:  
     
-* A list of BED/VCF files or a dataframe or a GRanges object as input (required)  
+* A List of BED/VCF files, dataframe or a GRanges object as input (required)  
 * A window size of the clusters to identify (required)  
 * The combination of features required (i.e TFBS) (required)  
 * The order of features required within identified clusters (optional)  
@@ -136,16 +136,18 @@ Given 2 files, *a.bed* and *b.bed*, this condition states that the user is
 looking for clusters made from 1 "a" site and 2 "b" sites. In this case, the
 order of sites defined in `c` is relative to the order of files.
 
-In case the input is a data frame or GRanges (instead of files), the user needs
-to **explicitly** define the site name along with the count relative to each
-site. 
-Giving the condition as `c = c(1,2)` for a data frame or GRanges will not be allowed.  
-`x = dataFrame_of_sites, c = c("a" = 1, "b" = 2)` where `a`
- and `b` are valid site names in the `site`
+In case the input is a data frame or GRanges object (instead of files), the
+user needs to **explicitly** define the site names along with the count relative
+to each site.
+For instance, giving the condition as `c = c(1,2)` for a data frame or GRanges
+is not allowed.  
+
+`x = dataframe, c = c("a" = 1, "b" = 2)` where `a`
+ and `b` are valid site names in `site` column in the dataframe
 
 Users can exclude sites from their cluster. this is specified by zero `0`
- in the condition as `c = c("a" = 1, "b" = 2, "c" = 0)`, meaning that if any cluster
- contains "c" site will not be considered as cluster.
+in the condition as `c = c("a" = 1, "b" = 2, "c" = 0)`. In this case, any 
+cluster containing `c` site will not be considered as cluster.
 
 ## Seqnames (seqnames) and Strand (s).
 By default, clustering will be performed on both strands and on all seqnames
@@ -163,7 +165,8 @@ For `s`, the values allowed are:
 * **-** : Build clusters on negative strand
 * **\*** : Clusters are not strand specific  
 (Default is set to **\***)
-	
+
+
 ## Overlap (overlap)
 The gap/overlap between adjacent clusters, and not sites, can be controled using
 the `overlap` option.
@@ -248,7 +251,7 @@ x = data.frame(seqnames = rep("chr1", times = 16),
              "s1","s2","s1","s1","s2"))
 
 clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
-	greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
+    greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
 ```
 
 # Session Info

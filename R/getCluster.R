@@ -4,8 +4,8 @@
 
 globalVariables(c("parOut","s","site","strand"))
 
-getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
-                      s="*" , order=NULL, verbose = FALSE) {
+getCluster <- function(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL,
+                    s = "*" , order=NULL, verbose = FALSE) {
 
     start.time = Sys.time()
 
@@ -14,15 +14,14 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         stop("A data frame, Granges object or input files are needed")
     }
 
-    exclusion <- NULL
-    exc_sites <- NULL
+    sitesToExclude <- NULL
 
     ## Checking input format
     if (is(x, "data.frame") || is(x, "GRanges")) {
         ## print("data.frame input")
         if (is.null(names(c))) {
             stop("When input is a data frame or GRanges object, site names
- in condition must be explicitly defined")
+in condition must be explicitly defined")
         }
         
 
@@ -48,7 +47,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     }
     
     if(length(which(duplicated(names(c))))!=0){
-        stop("No duplicate conditions allowed - use only one instance for each condition")
+        stop("Names of conditions must be unique")
     }
 
     if(length(which(c<0))!=0 | !(is.numeric(c))){
@@ -59,10 +58,11 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         stop("Only integers allowed")
     }
 
-    exclusion <- which(c==0)
+    indexToExclude <- which(c == 0)
 
-    if(length(exclusion)!=0){
-        exc_sites <- names(exclusion)
+    ## Getting conditions to exclude (i.e with 0 values)
+    if(length(indexToExclude) != 0){
+        sitesToExclude <- names(indexToExclude)
     }
     
     ## Test if window is a positive integer
@@ -71,7 +71,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     
     if (!(s %in% c("+", "-", "*")))
         stop('Strand needs to be a valid option. Accepted options are "+", "-"
-             and "*"')
+                and "*"')
 
     ##if not greedy and order is given
     if(is.null(order) == FALSE){
@@ -79,14 +79,14 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
         for(i in seq_along(order)){
             if(!order[i] %in% names(c)){
                 stop(paste("Site names in order and condition do not match: ",
-                           order[i], sep=""))
+                            order[i], sep=""))
             }
         }
         if(greedy == FALSE){
             ## order has more sites than condition
             for(i in seq_along(unique(order))){
                 if(sum(unique(order)[i] == order) >
-                   c[which(names(c) == unique(order)[i])]){
+                    c[which(names(c) == unique(order)[i])]){
                     stop("Greedy is FALSE and order is larger than condition")
                 }
             }
@@ -114,8 +114,10 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     cat (nrow(x), " entries loaded", "\n")
 
     ##need to subset to keep only the sites required by the user,
-    ##if the user wants sites "a","b" and input has "a", "b" and "c", we subset to get sites "a", "b"
-    if(!(is.null(exc_sites))){
+    ##if the user wants sites "a","b" and input has "a", "b" and "c",
+    ##we subset to get sites "a", "b"
+    
+    if(!(is.null(sitesToExclude))){
         x
     }
     
@@ -128,7 +130,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     ## creating an array to fill results
     res = array(data = NA, dim = c(nrow(x), ncol = 7))
     colnames(res) = c("seqnames", "start", "end", "site", "strand",
-                      "isCluster", "status")
+                        "isCluster", "status")
 
     final = data.frame()
     
@@ -140,7 +142,7 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
 
         if (nrow(df) >= n) {
             result = cluster_sites(df, w, c, overlap, n,
-                                   res, s, greedy, order, exc_sites)
+                                    res, s, greedy, order, sitesToExclude)
             final = rbind(final, result)
         }
     }
@@ -169,17 +171,19 @@ getCluster <-function(x, w, c, overlap=0, greedy=TRUE, seqnames=NULL,
     
     if (nrow(final) != 0) {
         final = data.frame(seqnames = as.character(final[,"seqnames"]),
-                           start = as.numeric(levels(final[,"start"]))[final[,"start"]],
-                           end = as.numeric(levels(final[,"end"]))[final[,"end"]],
-                           strand = as.character(final[,"strand"]),
-                           sites = as.character(final[,"site"]),
-                           isCluster = as.logical(final[,"isCluster"]),
-                           status = as.character(final[,"status"]),
-                           stringsAsFactors = FALSE
-                           )
+                            start = as.numeric(levels(final[,"start"]))
+                            [final[,"start"]],
+                            end = as.numeric(levels(final[,"end"]))
+                            [final[,"end"]],
+                            strand = as.character(final[,"strand"]),
+                            sites = as.character(final[,"site"]),
+                            isCluster = as.logical(final[,"isCluster"]),
+                            status = as.character(final[,"status"]),
+                            stringsAsFactors = FALSE
+                            )
 
         final <- makeGRangesFromDataFrame(final, keep.extra.columns = TRUE,
-                                      starts.in.df.are.0based = TRUE)
+                                        starts.in.df.are.0based = TRUE)
     }else{
         message("No cluster found")
         return(NULL)
@@ -209,11 +213,12 @@ load_data <- function(all_files, c) {
 }
 
 
-cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order, exc_sites) {
+cluster_sites<-function(df, w, c, overlap, n, res, s, greedy, order,
+                        sitesToExclude){
     start_site <- df$start
     end_site <- df$end
     site <- df$site
-    exclusion_ls <- exc_sites
+    exclusion_ls <- sitesToExclude
 
     isCluster <- FALSE
 
@@ -257,7 +262,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order, exc_sites)
         }
 
         ## checking if required sites are present
-        ans <- testCombn(ls, c, order, exc_sites)
+        ans <- testCombn(ls, c, order, exclusion_ls)
         isCluster = ans$logical
         status = ans$status
 
@@ -281,7 +286,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order, exc_sites)
     
     res <- res[complete.cases(res), ]
 
-    #$ cases where we have one entry, converting a vector to matrix prior to return
+    #Case with one entry, Converting vector to matrix prior to return
     if (is(res, "character")){
         res.names <- names(res)
         res = matrix(res, 1, length(res))
@@ -290,7 +295,7 @@ cluster_sites <-function(df, w, c, overlap, n, res, s, greedy, order, exc_sites)
     return(res)
 }
 
-testCombn <- function(ls, c, order, exc_sites) {
+testCombn <- function(ls, c, order, sitesToExclude) {
     ans <- list()
 
     for (key in names(c)) {
@@ -315,13 +320,13 @@ testCombn <- function(ls, c, order, exc_sites) {
         }
     }
     
-    if(!(is.null(exc_sites))){
-        for (exc_site in exc_sites){
+    if(!(is.null(sitesToExclude))){
+        for (exc_site in sitesToExclude){
             if(length(grep(exc_site, ls, value = TRUE))>0){
             ans$logical = FALSE
             ans$status = "ExcludedSites"
         }
-      }
+        }
     }
     
     return(ans)
