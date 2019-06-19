@@ -190,7 +190,7 @@ the condition will be labelled as *FALSE*.
 
 When `greedy = TRUE`, additional sites can be added to the cluster as
 long as the cluster size is below the defined window size.
-(Default is set to **TRUE**)  
+(Default is set to **FALSE**)  
 
 
 ## Order (order)

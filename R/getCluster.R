@@ -4,8 +4,8 @@
 
 globalVariables(c("parOut","s","site","strand"))
 
-getCluster <- function(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL,
-                    s = "*" , order=NULL, verbose = FALSE) {
+getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
+                    s = "*" , order = NULL, verbose = FALSE) {
 
     start.time = Sys.time()
 

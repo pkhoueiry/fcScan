@@ -3,7 +3,7 @@
 \title{Detect clusters of genomic features (i.e TFBS) in a specified window 
 size and using user defined options}
 \usage{
-getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = "*",
+getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
 order = NULL, verbose = FALSE)
 
 }
@@ -30,7 +30,7 @@ defined window size and satisfiying user defined categorical conditions.
             contain the exact combination of sites defined in "c".
             If TRUE, clusters containing the condition and more will
             be labeled as TRUE as long as window size is below or equal
-            the defined value. The default is set to TRUE}
+            the defined value. The default is set to FALSE}
 
     \item{seqnames}{character; seqname/chromosome to cluster on. 
     The default is set to NULL so the clustering 
@@ -76,7 +76,7 @@ cluster. When set to TRUE, getCluster will return clusters containing
 the required number of sites and more as long as the window size
 condition is satisfied. When set to FALSE, getCluster will return
 clusters containing the exact number of the required sites. Default is
-set to TRUE.
+set to FALSE.
 
 \emph{order} allows the user to choose whether the clusters should contain
 sites ordered in a certain way. When set to NULL, sites order is not
