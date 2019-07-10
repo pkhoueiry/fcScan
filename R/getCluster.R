@@ -24,10 +24,11 @@ getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
 in condition must be explicitly defined")
         }
         
-
-    } else if (is(x, "GRanges")){
+### change 1 : convert dataframe to GRanges ###
+    } else if (is(x, "data.frame")){
         ## print("GRanges input")
-        x <- as.data.frame(x)
+        ###x <- as.data.frame(x)
+        x <- makeGRangesFromDataFrame(x, keep.extra.columns = TRUE, starts.in.df.are.0based = TRUE)
     } else {
         ## print("File(s) input")
         if (length(c) != length(x))
@@ -79,17 +80,6 @@ in condition must be explicitly defined")
     if(!(all(order %in% names(c))))
         stop("site names between order and condition do not match")
 
-
-        # if(greedy == FALSE){
-        #     ## order has more sites than condition
-        #     for(i in seq_along(unique(order))){
-        #         if(sum(unique(order)[i] == order) >
-        #             c[which(names(c) == unique(order)[i])]){
-        #             stop("Greedy is FALSE and order is larger than condition")
-        #         }
-        #     }
-        # }
-
     ##check number of sites if equal in condition and order
     if(greedy == FALSE){
         if(!all(sort(c) == summary(as.factor(order)))){
@@ -101,16 +91,21 @@ in condition must be explicitly defined")
     n = sum(c)
 
     ##getting sites found on the required seqnamesom
+    ### change 2: subsetting from GRanges according to seqnames ###
     if (length(seqnames) > 0) {
-        x = x[(x$seqnames %in% seqnames),]
+        #x = x[(x$seqnames %in% seqnames),]
+        x = x[seqnames(x) %in% seqnames]
     }
 
     ##getting sites found on the required strand
+    ### change 3: subsetting from GRanges according to strand ###
     if (s != "*") {
-        x = subset(x, strand %in% s)
+        #x = subset(x, strand %in% s)
+        x = x[strand(x) %in% s]
     }
 
     ##check if the sites given in condition c are found in the data
+    ### change 4: remove 'x$site' and add '
     if( !all(names(c) %in% x$site) ) {
         message("Sites in condition do not match sites in data")
         return(NULL)
