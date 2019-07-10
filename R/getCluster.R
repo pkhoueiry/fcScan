@@ -105,13 +105,13 @@ in condition must be explicitly defined")
     }
 
     ##check if the sites given in condition c are found in the data
-    ### change 4: remove 'x$site' and add '
-    if( !all(names(c) %in% x$site) ) {
+    ### change 4: removed 'x$site' and added '
+    if( !all(names(c) %in% as.matrix(as.data.frame(mcols(x[,1]))))) {
         message("Sites in condition do not match sites in data")
         return(NULL)
     }
 
-    cat (nrow(x), " entries loaded", "\n")
+    cat (length(x), " entries loaded", "\n")
 
     ##need to subset to keep only the sites required by the user,
     ##if the user wants sites "a","b" and input has "a", "b" and "c",
@@ -122,10 +122,14 @@ in condition must be explicitly defined")
     }
     
     else{
-    x = subset(x, site %in% names(c))
+    #x = subset(x, site %in% names(c))
+    ### change 5: subsetting according to condition input ###
+    x = x[(elementMetadata(x)[, "site"] %in% names(c))]
     }
     
-    unique_seqnames = unique(x$seqnames)
+    ###change 6:
+    #unique_seqnames = unique(x$seqnames)
+    unique_seqnames = unique(as.factor(as.data.frame(mcols(x[,1]))))
 
     ## creating an array to fill results
     res = array(data = NA, dim = c(nrow(x), ncol = 7))
