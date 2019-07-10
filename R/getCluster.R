@@ -75,20 +75,23 @@ in condition must be explicitly defined")
 
     ##if not greedy and order is given
     if(is.null(order) == FALSE){
-        ##checking for consistency of name in order and condition
-        for(i in seq_along(order)){
-            if(!order[i] %in% names(c)){
-                stop(paste("Site names in order and condition do not match: ",
-                            order[i], sep=""))
-            }
-        }
+    ##checking for consistency of name in order and condition
+    if(!(all(order %in% names(c))))
+        stop("site names between order and condition do not match")
+
+
+        # if(greedy == FALSE){
+        #     ## order has more sites than condition
+        #     for(i in seq_along(unique(order))){
+        #         if(sum(unique(order)[i] == order) >
+        #             c[which(names(c) == unique(order)[i])]){
+        #             stop("Greedy is FALSE and order is larger than condition")
+        #         }
+        #     }
+        # }
         if(greedy == FALSE){
-            ## order has more sites than condition
-            for(i in seq_along(unique(order))){
-                if(sum(unique(order)[i] == order) >
-                    c[which(names(c) == unique(order)[i])]){
-                    stop("Greedy is FALSE and order is larger than condition")
-                }
+            if(!all(sort(c) == summary(as.factor(order)))){
+                stop("Greedy is FALSE and order is larger than condition")
             }
         }
     }

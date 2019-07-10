@@ -34,7 +34,7 @@ suppressPackageStartupMessages({library('fcScan')})
 <p>
 **R version**: `r R.version.string`
 <br />
-**Bioconductor version**: `BiocManager::version()`
+**Bioconductor version**: `r BiocManager::version()`
 <br />
 **Package version**: `r packageVersion("fcScan")`
 </p>
@@ -244,7 +244,7 @@ sites than the required `c` condition as long as the window size is satisfied.
 
 Example using `getCluster`:
 
-```{r, eval=FALSE} 
+```{r, eval=TRUE} 
 x = data.frame(seqnames = rep("chr1", times = 16),
     start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
     end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
@@ -254,6 +254,8 @@ x = data.frame(seqnames = rep("chr1", times = 16),
 
 clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
     greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
+
+clusters
 ```
 
 # Session Info
