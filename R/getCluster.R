@@ -89,9 +89,11 @@ in condition must be explicitly defined")
         #         }
         #     }
         # }
-        if(greedy == FALSE){
-            if(!all(sort(c) == summary(as.factor(order)))){
-                stop("Greedy is FALSE and order is larger than condition")
+
+    ##check number of sites if equal in condition and order
+    if(greedy == FALSE){
+        if(!all(sort(c) == summary(as.factor(order)))){
+            stop("Greedy is FALSE and order is larger than condition")
             }
         }
     }
