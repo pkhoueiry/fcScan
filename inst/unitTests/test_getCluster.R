@@ -6,7 +6,7 @@ x1 = data.frame(seqnames = rep("chr1", times = 17),
                start = c(1,10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
                end = c(8,15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
                strand = rep("+", 17),
-               site = c("s3","s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
+               site = c("s3","s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"), stringsAsFactors=FALSE)
 
 t1 = GRanges(
     seqnames = Rle("chr1", 3),
@@ -22,7 +22,7 @@ x2 = data.frame(seqnames = rep("chr1", times = 3),
                start = c(10,17,25),
                end = c(15,20,30),
                strand = rep("+", 3),
-               site = c("s1","s2","s2"))
+               site = c("s1","s2","s2"), stringsAsFactors=FALSE)
 
 t2 = GRanges(
     seqnames = Rle("chr1", 1),
@@ -110,7 +110,7 @@ x3 = data.frame(seqnames = rep("chr1", times = 6),
                start = c(10,17,25,40,42,55),
                end = c(15,20,30,50,56,70),
                strand = c("+", "-", "-", "-", "+", "+"),
-               site = c("s1","s2","s2","s2","s1","s1"))
+               site = c("s1","s2","s2","s2","s1","s1"), stringsAsFactors=FALSE)
 
 t12 = GRanges(
     seqnames = Rle("chr1", 2),
@@ -125,7 +125,7 @@ x4 = data.frame(seqnames = rep("chr1", times = 6),
                start = c(10,17,25,40,42,55),
                end = c(15,20,30,50,56,70),
                strand = c("+", "+", "+", "+", "+", "+"),
-               site = c("s1","s2","s3","s2","s1","s3"))
+               site = c("s1","s2","s3","s2","s1","s3"), stringsAsFactors=FALSE)
 
 t13 = GRanges(
     seqnames = Rle("chr1", 2),
@@ -158,7 +158,7 @@ x5 = data.frame(seqnames = rep("chr1", times = 10),
                start = c(10,17,25,40,42,55,72,75,90,95),
                end = c(15,20,30,50,56,70,80,89,100,115),
                strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+"),
-               site = c("s1","s2","s3","s2","s1","s3","s1","s3","s2","s1"))
+               site = c("s1","s2","s3","s2","s1","s3","s1","s3","s2","s1"), stringsAsFactors=FALSE)
 
 t16 = GRanges(
     seqnames = Rle("chr1", 2),
@@ -173,7 +173,7 @@ x6 = data.frame(seqnames = rep("chr1", times = 10),
                start = c(10,17,25,40,42,55,72,75,90,95),
                end = c(15,20,30,50,56,70,80,89,100,112),
                strand = c("+", "+", "+", "+", "+", "+", "+", "+", "+", "+"),
-               site = c("s1","s2","s2","s3","s1","s3","s1","s2","s2","s1"))
+               site = c("s1","s2","s2","s3","s1","s3","s1","s2","s2","s1"), stringsAsFactors=FALSE)
 
 t17 = GRanges(
     seqnames = Rle("chr1", 3),
