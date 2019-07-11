@@ -31,7 +31,12 @@ in condition must be explicitly defined")
         ###x <- as.data.frame(x)
         x = makeGRangesFromDataFrame(x, keep.extra.columns = TRUE,
             starts.in.df.are.0based = TRUE)
-    } else {
+    }
+    
+    else if(is(x, "GRanges")){
+        x
+    }    
+    else {
         ## print("File(s) input")
         if (length(c) != length(x))
             stop("Condition and files should be of same length")
@@ -405,5 +410,12 @@ testCombn <- function(ls, c, order, sitesToExclude) {
 #     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
 #                 "s1","s2","s1","s1","s2"))
 
+
+# x = GRanges(seqnames = Rle("chr1", 16),
+#     ranges = IRanges(c(10L,17L,25L,27L,32L,41L,47L,60L,70L,87L,94L,99L,107L,113L,121L,132L),
+#     end = c(15L,20L,30L,35L,40L,48L,55L,68L,75L,93L,100L,105L,113L,120L,130L,135L)),
+#     strand = Rle("+",16),
+#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
+    
 # clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
 #     greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"), verbose=TRUE)
