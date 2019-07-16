@@ -19,16 +19,17 @@ getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
     ## Checking input format
     if (is(x, "data.frame") || is(x, "GRanges")) {
         ## print("data.frame input")
-        if (is.null(names(c))) {
+        if(is.null(names(c))) {
             stop("When input is a data frame or GRanges object, site names
 in condition must be explicitly defined")
         }
         
 ### change 1 : convert dataframe to GRanges ###
-    } else if (is.data.frame(x)){
+    }  
+        if(is.data.frame(x)){
         ## print("GRanges input")
         ###x <- as.data.frame(x)
-        x <- makeGRangesFromDataFrame(x, keep.extra.columns = TRUE, 
+        x = makeGRangesFromDataFrame(x, keep.extra.columns = TRUE,
             starts.in.df.are.0based = TRUE)
     } else {
         ## print("File(s) input")
@@ -89,6 +90,11 @@ in condition must be explicitly defined")
         }
     }
 
+    ##check verbose input argument
+    if( !(verbose %in% c("TRUE", "FALSE"))) {
+        stop("verbose should be TRUE or FALSE")
+    }
+
     n = sum(c)
 
     ##getting sites found on the required seqnamesom
@@ -102,12 +108,12 @@ in condition must be explicitly defined")
     ### change 3: subsetting from GRanges according to strand ###
     if (s != "*") {
         #x = subset(x, strand %in% s)
-        x = subset(x, strand(x) %in% s)
+        x <- subset(x, strand(x) %in% s)
     }
 
     ##check if the sites given in condition c are found in the data
     ### change 4: removed 'x$site' and added '
-    if( !all(names(c) %in% as.matrix(as.data.frame(mcols(x[,1]))))) {
+    if( !all(names(c) %in% x$site)) {
         message("Sites in condition do not match sites in data")
         return(NULL)
     }
@@ -133,13 +139,13 @@ in condition must be explicitly defined")
     unique_seqnames = unique(as.vector(seqnames(x)))
 
     ## creating an array to fill results
-    res = array(data = NA, dim = c(nrow(x), ncol = 7))
+    res = array(data = NA, dim = c(length(x), ncol = 7))
     colnames(res) = c("seqnames", "start", "end", "site", "strand",
                         "isCluster", "status")
 
     ### Change 7: create empty GRanges object
     #final = data.frame()
-    final = GRanges()
+    final = NULL
     
     ### Change 8: ###
     ## looping over chromosomes 
@@ -170,22 +176,9 @@ in condition must be explicitly defined")
     #     final = t(final)
     # }
 
-    ##check verbose input argument
-    if( !(verbose %in% c("TRUE", "FALSE"))) {
-        stop("verbose should be TRUE or FALSE")
-    }
-
-    ##if verbose is FALSE, get only clusters with "PASS"
-    if(verbose == FALSE) {
-        final = subset(final, final$status == "PASS")
-    }
-
-    ##if TRUE, get everything
-    if(verbose == TRUE) {
-        final
-    }
     
-    # if (nrow(final) != 0) {
+
+    #if (length(final) != 0) {
     #     final = data.frame(seqnames = as.character(final[,"seqnames"]),
     #                         start = as.numeric(levels(final[,"start"]))
     #                         [final[,"start"]],
@@ -202,11 +195,43 @@ in condition must be explicitly defined")
     #                                     starts.in.df.are.0based = TRUE)
 
     if(length(final) !=0 ){
-        final
+        final <- matrix(final)
+        chr = final[1:((length(final)/7))*1,]
+        start = as.numeric(final[(((length(final)/7))+1):(((length(final)/7))*2),])
+        end = as.numeric(final[(2*((length(final)/7))+1):(((length(final)/7))*3),])
+        sites = as.character(final[(3*((length(final)/7))+1):(((length(final)/7))*4),])
+        strand = as.character(final[(4*((length(final)/7))+1):(((length(final)/7))*5),])
+        isCluster = as.logical(final[(5*((length(final)/7))+1):(((length(final)/7))*6),])
+        status = as.character(final[(6*((length(final)/7))+1):(((length(final)/7))*7),])
+
+        # print(chr)
+        # print(start)
+        # print(end)
+        # print(strand)
+        # print(sites)
+        # print(isCluster)
+        # print(status)
+        final <- GRanges( seqnames = chr, ranges = IRanges(start, end = end), 
+            sites = sites, strand = strand, isCluster = isCluster, 
+            status = status)
+
+        # for(i in seq(1, length(final), by=(length(final)/7))){
+        #     final_1 <- final[i:(i+4),]
+        # }
 
     }else{
         message("No cluster found")
         return(NULL)
+    }
+
+    ##if verbose is FALSE, get only clusters with "PASS"
+    if(verbose == FALSE) {
+        final = subset(final, final$status == "PASS")
+    }
+
+    ##if TRUE, get everything
+    if(verbose == TRUE) {
+        final
     }
 
     end.time = Sys.time()
@@ -366,15 +391,19 @@ testCombn <- function(ls, c, order, sitesToExclude) {
 }
 
 
-x = data.frame(seqnames = rep("chr1", times = 16),
-    start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
-    end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
-    strand = rep("*", 16),
-    site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
-                "s1","s2","s1","s1","s2"), stringsAsFactors=FALSE)
+# x = data.frame(seqnames = rep("chr1", times = 16),
+#     start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
+#     end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
+#     strand = rep("*", 16),
+#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
+#                 "s1","s2","s1","s1","s2"), stringsAsFactors=FALSE)
 
+# x = data.frame(seqnames = rep("chr1", times = 16),
+#     start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
+#     end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
+#     strand = rep("+", 16),
+#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
+#                 "s1","s2","s1","s1","s2"))
 
-clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
-    greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"))
-
-clusters
+# clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
+#     greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"), verbose=TRUE)
