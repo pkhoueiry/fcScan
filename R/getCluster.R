@@ -2,11 +2,12 @@
 
 ##' @export getCluster
 
-globalVariables(c("parOut","s","site","strand"))
+#globalVariables(c("parOut","s","site","strand"))
+
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, verbose = FALSE) {
-
+    final = NULL
     start.time = Sys.time()
 
     ##check arguments
@@ -113,7 +114,8 @@ in condition must be explicitly defined")
     ### change 3: subsetting from GRanges according to strand ###
     if (s != "*") {
         #x = subset(x, strand %in% s)
-        x <- subset(x, strand(x) %in% s)
+        #x <- subset(x, strand(x) %in% as.vector(s))
+        x <- x[strand(x) == s]
     }
 
     ##check if the sites given in condition c are found in the data
@@ -141,7 +143,7 @@ in condition must be explicitly defined")
     
     ###change 6: ###
     #unique_seqnames = unique(x$seqnames)
-    unique_seqnames = unique(as.vector(seqnames(x)))
+    unique_seqnames = unique((seqnames(x)))
 
     ## creating an array to fill results
     res = array(data = NA, dim = c(length(x), ncol = 7))
@@ -150,7 +152,7 @@ in condition must be explicitly defined")
 
     ### Change 7: create empty GRanges object
     #final = data.frame()
-    final = NULL
+    
     
     ### Change 8: ###
     ## looping over chromosomes 
@@ -216,7 +218,7 @@ in condition must be explicitly defined")
         # print(sites)
         # print(isCluster)
         # print(status)
-        final <- GRanges( seqnames = chr, ranges = IRanges(start, end = end), 
+        final <- GRanges( seqnames = chr, ranges = IRanges(start,end), 
             sites = sites, strand = strand, isCluster = isCluster, 
             status = status)
 
