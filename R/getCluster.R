@@ -202,14 +202,20 @@ in condition must be explicitly defined")
     #                                     starts.in.df.are.0based = TRUE)
 
     if(length(final) !=0 ){
-        final <- matrix(final)
-        chr = final[1:((length(final)/7))*1,]
-        start = as.numeric(final[(((length(final)/7))+1):(((length(final)/7))*2),])
-        end = as.numeric(final[(2*((length(final)/7))+1):(((length(final)/7))*3),])
-        sites = as.character(final[(3*((length(final)/7))+1):(((length(final)/7))*4),])
-        strand = as.character(final[(4*((length(final)/7))+1):(((length(final)/7))*5),])
-        isCluster = as.logical(final[(5*((length(final)/7))+1):(((length(final)/7))*6),])
-        status = as.character(final[(6*((length(final)/7))+1):(((length(final)/7))*7),])
+    final <- matrix(final)
+    chr = final[1:((length(final)/7))*1,]
+    start = as.numeric(final[(((length(final)/7))+1):
+        (((length(final)/7))*2),])
+    end = as.numeric(final[(2*((length(final)/7))+1):
+        (((length(final)/7))*3),])
+    sites = as.character(final[(3*((length(final)/7))+1):
+        (((length(final)/7))*4),])
+    strand = as.character(final[(4*((length(final)/7))+1):
+        (((length(final)/7))*5),])
+    isCluster = as.logical(final[(5*((length(final)/7))+1):
+        (((length(final)/7))*6),])
+    status = as.character(final[(6*((length(final)/7))+1):
+        (((length(final)/7))*7),])
 
         # print(chr)
         # print(start)
@@ -309,7 +315,7 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
             # end = end[length(end)]
             # iEnd = which(df$end == end)[1]
             # ls <- site[i:iEnd]
-            end = end(gr)[end(gr) <= start_site[i] + w & end(gr) >= end_site[i]]
+            end = end(gr)[end(gr) <= start_site[i] + w & end(gr)>= end_site[i]]
             end = end[length(end)]
             iEnd = which(end(gr) == end)[1]
             ls <- site[i:iEnd]
@@ -396,28 +402,3 @@ testCombn <- function(ls, c, order, sitesToExclude) {
     
     return(ans)
 }
-
-
-# x = data.frame(seqnames = rep("chr1", times = 16),
-#     start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
-#     end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
-#     strand = rep("*", 16),
-#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
-#                 "s1","s2","s1","s1","s2"), stringsAsFactors=FALSE)
-
-# x = data.frame(seqnames = rep("chr1", times = 16),
-#     start = c(10,17,25,27,32,41,47,60,70,87,94,99,107,113,121,132),
-#     end = c(15,20,30,35,40,48,55,68,75,93,100,105,113,120,130,135),
-#     strand = rep("+", 16),
-#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2",
-#                 "s1","s2","s1","s1","s2"))
-
-
-# x = GRanges(seqnames = Rle("chr1", 16),
-#     ranges = IRanges(c(10L,17L,25L,27L,32L,41L,47L,60L,70L,87L,94L,99L,107L,113L,121L,132L),
-#     end = c(15L,20L,30L,35L,40L,48L,55L,68L,75L,93L,100L,105L,113L,120L,130L,135L)),
-#     strand = Rle("+",16),
-#     site = c("s1","s2","s2","s1","s2","s1","s1","s2","s1","s2","s2","s1","s2","s1","s1","s2"))
-    
-# clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2),
-#     greedy = TRUE, overlap = -5, s = "+", order = c("s1","s2","s1"), verbose=TRUE)
