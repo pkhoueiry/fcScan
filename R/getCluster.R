@@ -26,8 +26,6 @@ in condition must be explicitly defined")
         }
     }
         if(is.data.frame(x)){
-        ## print("GRanges input")
-        ###x <- as.data.frame(x)
         x = makeGRangesFromDataFrame(x, keep.extra.columns = TRUE,
             starts.in.df.are.0based = TRUE)
     }
