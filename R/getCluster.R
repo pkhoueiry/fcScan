@@ -197,7 +197,6 @@ load_data <- function(all_files, c) {
                                             "strand", "site")])
     }
     gr$strand[gr$strand == "*"] <- "+"
-    #strand(gr)[strand(gr) == "*"] <- "+"
     return(gr)
 }
 
