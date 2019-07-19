@@ -265,9 +265,9 @@ order of sites is not respected in the found cluster, status would return
 `OrderFail`. in Addition, if the cluster found contains non desired sites, 
 it returns `ExcludedSites`
 
-In this example, we ask `getCluster` to return clusters that contains sites
-"s1" and "s2" and not "s3", with the following order: "s1","s2"
-
+In this example, we ask `getCluster` to return clusters that contains 
+one site "s1" and one site "s2" and not "s3", 
+with the following order: "s1","s2"
 
 ```{r, eval=TRUE}
 x1 = data.frame(seqnames = rep("chr1", times = 17),
