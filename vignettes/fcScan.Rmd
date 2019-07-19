@@ -266,7 +266,7 @@ order of sites is not respected in the found cluster, status would return
 it returns `ExcludedSites`
 
 In this example, we ask `getCluster` to return clusters that contains 
-one site "s1" and one site "s2" and not "s3", 
+one site "s1", one site "s2" and no "s3" sites, 
 with the following order: "s1","s2"
 
 ```{r, eval=TRUE}
