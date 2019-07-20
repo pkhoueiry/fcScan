@@ -14,6 +14,7 @@ The below R packages are required for installation:
 + SummarizedExperiment
 + rtracklayer
 + GenomicRanges
++ IRanges
 
 Installation
 ------------
