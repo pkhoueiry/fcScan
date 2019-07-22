@@ -284,6 +284,24 @@ clusters = getCluster(x1, w = 20, c = c("s1" = 1, "s2" = 1, "s3" = 0),
     greedy = TRUE, order = c("s1","s2"), s = "+", verbose = TRUE)
 
 clusters
+
+#Another simpler Example:
+suppressMessages(library(GenomicRanges))
+
+x = GRanges(
+    seqnames = Rle("chr1", 16),
+    ranges = IRanges(start = c(10L,17L,25L,27L,32L,41L,47L,
+        60L,70L,87L,94L,99L,107L,113L,121L,132L),
+    end = c(15L,20L,30L,35L,40L,48L,55L,68L,75L,93L,100L,105L,
+        113L,120L,130L,135L)),
+    strand = Rle("+",16),
+    site = c("s1","s2","s2","s1","s2","s1","s1","s2",
+        "s1","s2","s2","s1","s2","s1","s1","s2"))
+    
+clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2))
+
+clusters
+
 ```
 
 # Session Info
