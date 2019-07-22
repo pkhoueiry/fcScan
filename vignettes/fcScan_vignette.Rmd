@@ -284,8 +284,13 @@ clusters = getCluster(x1, w = 20, c = c("s1" = 1, "s2" = 1, "s3" = 0),
     greedy = TRUE, order = c("s1","s2"), s = "+", verbose = TRUE)
 
 clusters
+```
 
-#Another simpler Example:
+Another simpler example:
+in this example, we ask `getCluster` to look for clusters that contains
+one site "s1" and two sites "s2" within window size of 25 bp.
+
+```{r, eval=TRUE}
 suppressMessages(library(GenomicRanges))
 
 x = GRanges(
@@ -301,7 +306,6 @@ x = GRanges(
 clusters = getCluster(x, w = 25, c = c("s1"=1,"s2"=2))
 
 clusters
-
 ```
 
 # Session Info
