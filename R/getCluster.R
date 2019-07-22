@@ -7,6 +7,8 @@ globalVariables(c("s","site","strand"))
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, verbose = FALSE) {
+
+    sitesToExclude <- NULL
     final = NULL
     start.time = Sys.time()
 
@@ -14,8 +16,6 @@ getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
     if (missing(x)) {
         stop("A data frame, Granges object or input files are needed")
     }
-
-    sitesToExclude <- NULL
 
     ## Checking input format
     if (is(x, "data.frame") || is(x, "GRanges")) {
@@ -184,7 +184,7 @@ in condition must be explicitly defined")
 
 
 load_data <- function(all_files, c) {
-    gr = NULL
+    df = NULL
     for(i in seq_along(all_files)){
         if(grepl("\\.bed$", all_files[i])){
             b = import(all_files[i])
@@ -192,12 +192,15 @@ load_data <- function(all_files, c) {
         else if(grepl("\\.vcf$|\\.vcf.gz$", all_files[i])){
             b = rowRanges(readVcf(all_files[i]))
         }
+        else{
+            stop("only .bed, .vcf and .vcf.gz extensions are accepted")
+        }
         b$site = names(c[i])
-        gr = rbind(gr, as.data.frame(b)[, c("seqnames", "start", "end",
+        df = rbind(df, as.data.frame(b)[, c("seqnames", "start", "end",
                                             "strand", "site")])
     }
-    gr$strand[gr$strand == "*"] <- "+"
-    return(gr)
+    df$strand[df$strand == "*"] <- "+"
+    return(df)
 }
 
 

@@ -121,6 +121,9 @@ The *site* column contains the ID of the site and will be used for clustering.
 The *start* and *end* columns are numeric while the remaining columns are 
 characters.
 
+Note: when input is data frame, the data is considered `zero-based`
+like in BED files.
+
 ## Window Size (w)
 Window size is set using `w`. It defines the `maximum` size of
 the clusters.
@@ -247,8 +250,9 @@ Example using `getCluster`:
 transcription factor binding sites, within a window size 
 and specific condition.
 
-this function accepts a data frame, GRanges object or BED and/or VCF 
-files as input. The output of `getCluster` is a GRanges object that 
+This function accepts a data frame and GRanges object. getCluster also accepts
+BED or VCF (or mix of both) files as input. 
+The output of `getCluster` is a GRanges object that 
 contains the genomic coordinates (seqnames, ranges and strand) and 
 three metadata columns: 
 
@@ -256,7 +260,7 @@ three metadata columns:
 specified in `getCluster`.
 
 2. isCluster: `TRUE` if the cluster found conform with the condition `c`
-and the `order` (if specified - it is an optional parameter) and `FALSE`
+and the `order` (if indicated in condition) and `FALSE`
 if the cluster fails to conform with the condition or order.
 
 3. status: `PASS` if `isCluster` equals `TRUE`. However, if `isCluster` is
@@ -266,8 +270,8 @@ order of sites is not respected in the found cluster, status would return
 it returns `ExcludedSites`
 
 In this example, we ask `getCluster` to look for clusters that contains
-one site "s1", one site "s2" and no "s3" sites, 
-with the following order: "s1","s2"
+one site "s1", one site "s2" and zero "s3" sites. In addition, we requested
+clusters to be searched as `+` strand and having sites in the order s1,s2.
 
 ```{r, eval=TRUE}
 x1 = data.frame(seqnames = rep("chr1", times = 17),
