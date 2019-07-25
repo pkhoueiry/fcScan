@@ -112,6 +112,10 @@ in condition must be explicitly defined")
         x <- x[strand(x) == s]
     }
 
+    if(length(unique(as.vector(strand(x))))>1){
+        strand(x) <- "*"
+    }
+
     ##check if the sites given in condition c are found in the data'
     if( !all(names(c) %in% x$site)) {
         message("Sites in condition do not match sites in data")

@@ -109,7 +109,7 @@ t11 = GRanges(
 x3 = data.frame(seqnames = rep("chr1", times = 6),
                start = c(10,17,25,40,42,55),
                end = c(15,20,30,50,56,70),
-               strand = c("+", "+", "+", "+", "+", "+"),
+               strand = c("+", "-", "-", "-", "+", "+"),
                site = c("s1","s2","s2","s2","s1","s1"))
 
 t12 = GRanges(
