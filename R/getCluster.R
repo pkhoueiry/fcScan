@@ -60,8 +60,9 @@ in condition must be explicitly defined")
         stop("Only positive integers allowed")
     }
 
-    if(!(is.numeric(overlap))){
-        stop("Only integers allowed")
+    ## overlap will accept integers only
+    if(!(overlap%%1 == 0)){
+        stop("Only integers are allowed for overlap")
     }
 
     indexToExclude <- which(c == 0)

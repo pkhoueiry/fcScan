@@ -64,7 +64,7 @@ based on user defined search criteria. Such criteria include:
 * A window size specifying the maximum cluster size allowed (required)
 * The combination of features required and/or to exclude (required)
 * The order of features required within identified clusters (optional)
-* The distance required between identified clusters (optional)
+* The distance required or allowed overlap between identified clusters (optional)
 * The strand(s) to build the clusters on (optional)
 * The seqname(s) to build the clusters on (optional)
 
@@ -78,25 +78,26 @@ fcScan depends on the following packages:
 * **utils**
 * **rtracklayer**
 * **SummarizedExperiment**
+* **IRanges**
 * **VariantAnnotation**
 * **GenomicRanges**
 
 # Overview
 Currently, fcScan has one main function, the `getCluster` function. Additional
-functionality may be added in the future including cross-species identification 
-of orthologous clusters.
+functionality will be added for future releases including cross-species
+identification of orthologous clusters.
 
 
 # Input arguments for getCluster
 
 ## Input data (x)
 The input for `getCluster` is given through the parameter `x`.
-This function accepts files in BED and VCF (compressed or not) formats. BED and
-VCF files are loaded by packages `rtracklayer` and `VariantAnnotation` 
-respectively. There is no limit to the number of files the user can define.
+This function accepts input in data frame, GRanges as well as vector of files
+in BED and VCF (compressed or not) formats. BED and VCF files are loaded
+by packages `rtracklayer` and `VariantAnnotation` respectively. There is no
+limit to the number of files the user can define.
 
-Alternatively, `getCluster` accepts a data frame or a GRanges object as input.
-When a data frame or GRanges are given, they should contain
+When input is data frame or GRanges objects are given, they should contain
 the following "named" 5 columns:
 
 * **seqnames** : Contains the seqname name
@@ -108,7 +109,7 @@ the following "named" 5 columns:
 ```{r, echo=FALSE, results='asis'}
 df <- data.frame(seqnames = c("chr1", "chr1", "chr1", "chr1", "chr1", "chr1"),
                 start = c(10, 17, 25, 27, 32, 41),
-                end=c(15, 20, 30, 35, 40, 48),
+                end = c(15, 20, 30, 35, 40, 48),
                 strand = c("+", "+", "+", "+", "+", "+"),
                 site = c("a", "b", "b", "a", "c", "b"))
 knitr::kable(df)
@@ -122,7 +123,7 @@ The *start* and *end* columns are numeric while the remaining columns are
 characters.
 
 Note: when input is data frame, the data is considered `zero-based`
-like in BED files.
+as in BED format.
 
 ## Window Size (w)
 Window size is set using `w`. It defines the `maximum` size of
@@ -132,10 +133,10 @@ the clusters.
 The clustering condition `c` defines the number and name of genomic features to
 search for based on features names defined in the `site` column
 `c = c("a" = 1, "b" = 2)`  
-This searches for clusters with 3 sites, One *a* site and two  *b* sites.
+This searches for clusters with 3 sites, One *a* site and two *b* sites.
 
-Another way of writing the condition is the following 
-`x = ("a.bed", "b.bed"), c = c(1,2)`  
+Another way of writing the condition, only if input is a vector to file paths,
+is the following  `x = ("a.bed", "b.bed"), c = c(1,2)`  
 Given 2 files, *a.bed* and *b.bed*, this condition states that the user is 
 looking for clusters made from 1 "a" site and 2 "b" sites. In this case, the
 order of sites defined in `c` is relative to the order of files.
@@ -149,9 +150,10 @@ is not allowed.
 `x = dataframe, c = c("a" = 1, "b" = 2)` where `a` and `b` are valid site 
 names in `site` column in the dataframe/GRanges
 
-Users can exclude sites from their cluster. This is done by specifying zero `0`
-in the condition as `c = c("a" = 1, "b" = 2, "c" = 0)`. In this case, any 
-cluster containing `c` site will be excluded even if it has 1 `a` and 2 `b`
+Users can exclude clusters containing a specific site(s). 
+This is done by specifying zero `0` in the condition as
+`c = c("a" = 1, "b" = 2, "c" = 0)`. In this case, any 
+cluster(s) containing `c` site will be excluded even if it has 1 `a` and 2 `b`
 sites.
 
 ## Seqnames (seqnames) and Strand (s).
@@ -160,7 +162,7 @@ unless specified by the user using the `s` and `seqnames` arguments to limit
 the search on a specific strand and/or seqname.
 
 Users can choose to cluster on one specific seqname `(seqnames = "chr1")`, or
-on more than one seqname `(seqnames = c("chr1","chr3","chr4"))`  
+on several seqnames `(seqnames = c("chr1","chr3","chr4"))`  
 (Default for `seqnames` is **NULL**) meaning that clustering on all seqnames 
 will be performed.
 
@@ -175,7 +177,7 @@ For `s`, the values allowed are:
 ## Overlap (overlap)
 The gap/overlap between adjacent clusters, and not sites, can be controled 
 using the `overlap` option.
-When `overlap` is positive, adjacent clusters will be separated by a minimum
+When `overlap` is a positive integer, adjacent clusters will be separated by a minimum
 of the given value.
 When `overlap` is negative, adjacent clusters will be allowed to overlap by
 a maximum of the given value. (Default is set to **0**)
@@ -190,8 +192,8 @@ of sites provided in the condition argument.
 Clusters having the user defined window size but not satisfying
 the condition will be labelled as *FALSE*.
 
-When `greedy = TRUE`, additional sites can be added to the cluster as
-long as the cluster size is below the defined window size.
+When `greedy = TRUE`, additional sites defined in condition will be added
+to the cluster as long as the cluster size is below the defined window size.
 (Default is set to **FALSE**)  
 
 
@@ -209,7 +211,7 @@ a correct cluster . (Default is set to **NULL**)
 ## Verbose (verbose)
 The `verbose` option allows the printing of additional messages and the
 list of clusters that failed for lack of correct combination of sites.
-This option is used mainly for debugging purpose. (Default is set to FALSE)
+This option is used mainly for debugging purposes. (Default is set to FALSE)
 
 # Output of getCluster
 
@@ -225,8 +227,9 @@ The output of `getCluster` is a GRanges object with fields:
 
 
 The algorithm returns all clusters containing the correct count of
-sites/features. If the combination, overlap and order options are satisfied,
-the cluster is considered a `TRUE` cluster. 
+sites/features, unless verbose is set to `TRUE`. If the combination,
+overlap and order options are satisfied, the cluster is considered a
+`TRUE` cluster. 
 
 The *status* of a cluster can be either PASS, ExcludedSites or orderFail.
 `PASS` is a cluster that satisfied the desired combination, overlap and order.
@@ -286,9 +289,9 @@ clusters = getCluster(x1, w = 20, c = c("s1" = 1, "s2" = 1, "s3" = 0),
 clusters
 ```
 
-Another simpler example:
+Another example but using GRanges as input:
 in this example, we ask `getCluster` to look for clusters that contains
-one site "s1" and two sites "s2" within window size of 25 bp.
+one site `s1` and two sites `s2` within a window size of 25 bp.
 
 ```{r, eval=TRUE}
 suppressMessages(library(GenomicRanges))
