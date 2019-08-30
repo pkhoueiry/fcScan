@@ -211,8 +211,8 @@ load_data <- function(all_files, c) {
 cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
                         sitesToExclude){
 
-    start_site <- as.numeric(start(gr))
-    end_site <- as.numeric(end(gr))
+    start_site <- start(gr)
+    end_site <- end(gr)
     site <- gr$site
     exclusion_ls <- sitesToExclude
 
