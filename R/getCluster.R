@@ -25,14 +25,16 @@ getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
 in condition must be explicitly defined")
         }
     }
+        
         if(is.data.frame(x)){
         x = makeGRangesFromDataFrame(x, keep.extra.columns = TRUE,
             starts.in.df.are.0based = TRUE)
     }
-    
+
     else if(is(x, "GRanges")){
         x
     }    
+      
     else {
         ## print("File(s) input")
         if (length(c) != length(x))
@@ -113,10 +115,6 @@ in condition must be explicitly defined")
         x <- x[strand(x) == s]
     }
 
-    if(length(unique(as.vector(strand(x))))>1){
-        strand(x) <- "*"
-    }
-
     ##check if the sites given in condition c are found in the data'
     if( !all(names(c) %in% x$site)) {
         message("Sites in condition do not match sites in data")
@@ -144,11 +142,12 @@ in condition must be explicitly defined")
     colnames(res) = c("seqnames", "start", "end", "site", "strand",
                         "isCluster", "status")
 
+
     ## looping over chromosomes 
     for(seq in seq_along(unique_seqnames)){
 
         gr = subset(x, seqnames == unique_seqnames[seq])
-        gr = sort(gr)
+        gr = sort(gr, ignore.strand = TRUE)
 
         if (length(gr) >= n) {
             result = cluster_sites(gr, w, c, overlap, n,
@@ -212,8 +211,8 @@ load_data <- function(all_files, c) {
 cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
                         sitesToExclude){
 
-    start_site <- start(gr)
-    end_site <- end(gr)
+    start_site <- as.numeric(start(gr))
+    end_site <- as.numeric(end(gr))
     site <- gr$site
     exclusion_ls <- sitesToExclude
 
@@ -328,3 +327,4 @@ testCombn <- function(ls, c, order, sitesToExclude) {
     
     return(ans)
 }
+
