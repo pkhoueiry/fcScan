@@ -2,7 +2,7 @@
 
 ##' @export getCluster
 
-globalVariables(c("s","site","strand"))
+
 
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
