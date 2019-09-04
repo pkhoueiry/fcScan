@@ -1,5 +1,7 @@
 exportPattern("getCluster")
+importFrom(plyr, "count")
 importFrom(stats, "complete.cases")
+importFrom(stats, "na.omit")
 importFrom(rtracklayer, "import")
 importFrom(SummarizedExperiment,"rowRanges")
 importFrom(VariantAnnotation,"readVcf")

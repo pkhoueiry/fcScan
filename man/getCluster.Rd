@@ -4,7 +4,7 @@
 size and using user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
-order = NULL, verbose = FALSE)
+order = NULL, sites_orientation = NULL, verbose = FALSE)
 
 }
 \description{
@@ -42,6 +42,9 @@ defined window size and satisfiying user defined categorical conditions.
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contain. By default it is
                         set to NULL}
+    \item{sites_orientation}{vector; A vector containing the orientation 
+                        of the sites specified by the user. 
+                        By default it is set to NULL}
     \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is

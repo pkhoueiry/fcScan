@@ -6,7 +6,8 @@
 
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
-                    s = "*" , order = NULL, verbose = FALSE) {
+                    s = "*" , order = NULL, sites_orientation = NULL, 
+                    verbose = FALSE) {
 
     sitesToExclude <- NULL
     final = NULL
@@ -90,10 +91,28 @@ in condition must be explicitly defined")
 
     ##check number of sites if equal in condition and order
     if(greedy == FALSE){
-        if(!all(sort(c) == summary(as.factor(order)))){
+        count_elements <- c(count(order)$freq)
+        names(count_elements) <- count(order)$x
+        if(!(all(sort(count_elements) == sort(c)))){
             stop("Greedy is FALSE and order is larger than condition")
             }
         }
+    }
+    
+    #site orientation works only if order is provided
+    if(!(is.null(sites_orientation)) & is.null(order)){
+        stop("sites_orientation cannot be used unless order is specified")
+    }
+
+    #site orientation should be positive or negative
+    if(!(all(sites_orientation %in% c("+","-")))){
+        stop('Strand should be only "+" or "-"')
+    }
+
+    #site orientation input length should have same order length
+    if(length(order) != length(sites_orientation) & 
+        !(is.null(sites_orientation))){
+        stop("Orientation must be added to all sites in 'order' respectively")
     }
 
     ##check verbose input argument
@@ -151,7 +170,7 @@ in condition must be explicitly defined")
 
         if (length(gr) >= n) {
             result = cluster_sites(gr, w, c, overlap, n,
-                                    res, s, greedy, order, sitesToExclude)
+                    res, s, greedy, order, sitesToExclude, sites_orientation)
             final = rbind(final, result)
         }
     }
@@ -209,12 +228,14 @@ load_data <- function(all_files, c) {
 
 
 cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
-                        sitesToExclude){
+                        sitesToExclude, sites_orientation){
 
     start_site <- start(gr)
     end_site <- end(gr)
     site <- gr$site
     exclusion_ls <- sitesToExclude
+    strand <- as.vector(strand(gr))
+    sites_orientation_input <- sites_orientation
 
     isCluster <- FALSE
 
@@ -244,6 +265,7 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
             end = end[length(end)]
             iEnd = which(end(gr) == end)[1]
             ls <- site[i:iEnd]
+            so <- strand[i:iEnd]
         }
         else {
             end = max((end_site[i:(i + n - 1)]))
@@ -254,11 +276,12 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
                 next
             } else {
                 ls <- site[i:(i + n - 1)]
+                so <- strand[i:(i + n - 1)]
             }
         }
 
         ## checking if required sites are present
-        ans <- testCombn(ls, c, order, exclusion_ls)
+        ans <- testCombn(ls, c, order, exclusion_ls,so,sites_orientation_input)
         isCluster = ans$logical
         status = ans$status
 
@@ -291,8 +314,11 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
     return(res)
 }
 
-testCombn <- function(ls, c, order, sitesToExclude) {
+testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input) {
     ans <- list()
+    temp <- NULL
+    check <- FALSE
+
 
     for (key in names(c)) {
         if (sum((ls == key)) < c[key]) {
@@ -306,14 +332,33 @@ testCombn <- function(ls, c, order, sitesToExclude) {
         ans$logical = TRUE
         ans$status = "PASS"
     } else{
-        if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE)
+        if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE 
+            & is.null(s_orientation_input))
         {
+            ans$logical = TRUE
+            ans$status = "PASS"
+        }
+        else if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE 
+            & !(is.null(s_orientation_input))){
+            for(i in 1:length(ls)){
+                temp <- as.vector(na.omit(ls[i:(i+length(order)-1)]))
+                if((length(temp) == length(order)) && (all(temp == order)) && 
+                    (all(as.vector(na.omit(so[i:(i+length(order)-1)] 
+                        == s_orientation_input))))){
+                    check <- TRUE
+            }}
+            if(check){
             ans$logical = TRUE
             ans$status = "PASS"
         }else{
             ans$logical = FALSE
+            ans$status = "SitesOrientation"
+            }
+        }else{
+            ans$logical = FALSE
             ans$status = "orderFail"
         }
+
     }
     
     if(!(is.null(sitesToExclude))){
@@ -324,7 +369,6 @@ testCombn <- function(ls, c, order, sitesToExclude) {
         }
         }
     }
-    
+
     return(ans)
 }
-

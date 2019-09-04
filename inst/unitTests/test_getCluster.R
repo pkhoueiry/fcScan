@@ -201,6 +201,42 @@ t18 = GRanges(
     status = as.character("PASS","PASS")
 )
 
+t19 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(start = c(11L, 41L), end = c(20L, 56L)),
+    strand = Rle("*",2),
+    sites = as.character(c("s1,s2", "s2,s1")),
+    isCluster = as.logical(c(TRUE, FALSE)),
+    status = as.character(c("PASS","orderFail"))
+)
+
+t20 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(start = c(11L, 41L), end = c(20L, 56L)),
+    strand = Rle("*",2),
+    sites = as.character(c("s1,s2", "s2,s1")),
+    isCluster = as.logical(c(FALSE, FALSE)),
+    status = as.character(c("SitesOrientation","orderFail"))
+)
+
+t21 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(start = c(11L, 41L), end = c(30L, 56L)),
+    strand = Rle("*",2),
+    sites = as.character(c("s1,s2,s2", "s2,s1")),
+    isCluster = as.logical(c(TRUE, FALSE)),
+    status = as.character(c("PASS","orderFail"))
+)
+
+t22 = GRanges(
+    seqnames = Rle("chr1", 2),
+    ranges = IRanges(start = c(11L, 41L), end = c(30L, 56L)),
+    strand = Rle("*",2),
+    sites = as.character(c("s1,s2,s2", "s2,s1")),
+    isCluster = as.logical(c(FALSE, FALSE)),
+    status = as.character(c("SitesOrientation","orderFail"))
+)
+
 test_getCluster <- function() {
     #general test t1#
     checkEquals(getCluster(x1, w = 11, c = c("s1" = 1, "s2" = 1), greedy = FALSE, order = c("s1","s2"), s = "+", verbose = TRUE), t1)
@@ -242,4 +278,12 @@ test_getCluster <- function() {
     checkEquals(getCluster(x6, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), order = c("s1", "s2", "s2"), greedy = TRUE, verbose = TRUE), t17)
     #test t19 - input GRanges#
     checkEquals(getCluster(x7, w = 25, c = c("s1"=1,"s2"=2)), t18)
+    #test t20 - get TRUE cluster using sites_orientation option - greedy = FALSE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), sites_orientation= c("+","-"), verbose= TRUE), t19)
+    #test t21 - get FALSE cluster using sites_orientation option - greedy = FALSE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), sites_orientation= c("-","+"), verbose= TRUE), t20)
+    #test t22 - get TRUE cluster using sites_orientation option - greedy = TRUE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("+","-"), verbose= TRUE), t21)
+    #test t23 - get FALSE cluster using sites_orientation option - greedy = TRUE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("-","+"), verbose= TRUE), t22)
 }
