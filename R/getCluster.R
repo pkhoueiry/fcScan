@@ -7,7 +7,7 @@
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, sites_orientation = NULL, 
-                    verbose = FALSE) {
+                    intra_distance = 0, verbose = FALSE) {
 
     sitesToExclude <- NULL
     final = NULL
@@ -115,6 +115,11 @@ in condition must be explicitly defined")
         stop("Orientation must be added to all sites in 'order' respectively")
     }
 
+    ##intra_distance should be either positive, negative or zero
+    if(!(is.numeric(intra_distance) || intra_distance == 0)){
+        stop("Only integers allowed")
+    }
+
     ##check verbose input argument
     if( !(verbose %in% c("TRUE", "FALSE"))) {
         stop("verbose should be TRUE or FALSE")
@@ -170,7 +175,8 @@ in condition must be explicitly defined")
 
         if (length(gr) >= n) {
             result = cluster_sites(gr, w, c, overlap, n,
-                    res, s, greedy, order, sitesToExclude, sites_orientation)
+                    res, s, greedy, order, sitesToExclude, 
+                        sites_orientation, intra_distance)
             final = rbind(final, result)
         }
     }
@@ -228,14 +234,16 @@ load_data <- function(all_files, c) {
 
 
 cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
-                        sitesToExclude, sites_orientation){
+                        sitesToExclude, sites_orientation, intra_distance){
 
     start_site <- start(gr)
     end_site <- end(gr)
+    end_check <- 0
     site <- gr$site
     exclusion_ls <- sitesToExclude
     strand <- as.vector(strand(gr))
     sites_orientation_input <- sites_orientation
+    intraDistance <- intra_distance
 
     isCluster <- FALSE
 
@@ -263,9 +271,25 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
         if (greedy == TRUE) {
             end = end(gr)[end(gr) <= start_site[i] + w & end(gr)>= end_site[i]]
             end = end[length(end)]
-            iEnd = which(end(gr) == end)[1]
-            ls <- site[i:iEnd]
-            so <- strand[i:iEnd]
+            if(end_check == 0){
+                end_check = end
+                iEnd = which(end(gr) == end)[1]
+                ls <- site[i:iEnd]
+                so <- strand[i:iEnd]
+                sc <- start_site[i:iEnd]
+                ec <- end_site[i:iEnd]
+            }
+            else if(end_check == end & is.null(exclusion_ls)){
+                next
+            }
+            else {
+                end_check = end
+                iEnd = which(end(gr) == end)[1]
+                ls <- site[i:iEnd]
+                so <- strand[i:iEnd]
+                sc <- start_site[i:iEnd]
+                ec <- end_site[i:iEnd]
+            }
         }
         else {
             end = max((end_site[i:(i + n - 1)]))
@@ -277,11 +301,14 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
             } else {
                 ls <- site[i:(i + n - 1)]
                 so <- strand[i:(i + n - 1)]
+                sc <- start_site[i:(i + n -1)]
+                ec <- end_site[i:(i + n -1)]
             }
         }
 
         ## checking if required sites are present
-        ans <- testCombn(ls, c, order, exclusion_ls,so,sites_orientation_input)
+        ans <- testCombn(ls, c, order, exclusion_ls,so,sites_orientation_input, 
+                sc, ec, intraDistance)
         isCluster = ans$logical
         status = ans$status
 
@@ -314,10 +341,12 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
     return(res)
 }
 
-testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input) {
+testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input, 
+                    start_site, end_site, intraDistance) {
     ans <- list()
     temp <- NULL
     check <- FALSE
+    intra_distance_check <- FALSE
 
 
     for (key in names(c)) {
@@ -331,7 +360,7 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input) {
     if(is.null(order)){ ## order doesn't matter
         ans$logical = TRUE
         ans$status = "PASS"
-    } else{
+    }else{
         if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE 
             & is.null(s_orientation_input))
         {
@@ -354,12 +383,13 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input) {
             ans$logical = FALSE
             ans$status = "SitesOrientation"
             }
-        }else{
+        }
+        else{
             ans$logical = FALSE
             ans$status = "orderFail"
         }
-
     }
+    
     
     if(!(is.null(sitesToExclude))){
         for (exc_site in sitesToExclude){
@@ -370,5 +400,39 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input) {
         }
     }
 
+    if(intraDistance != 0){
+        if(intraDistance > 0){
+        #if intraDistance is positive, it means sites should have min distance and above
+            for(i in 1:(length(start_site)-1)){
+                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) <= intraDistance){
+                    intra_distance_check <- TRUE
+                    break
+                }
+            }
+        }
+
+        #if intraDistance is negative, it means sites should have max distance and below
+        else if(intraDistance < 0){
+            for(i in 1:(length(start_site)-1)){
+                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) >= abs(intraDistance)){
+                    intra_distance_check <- TRUE
+                    break
+                }
+            }
+        }
+        
+        if(intra_distance_check){
+            ans$logical = FALSE
+            if(ans$status == "PASS"){
+            ans$status = "IntraDist"
+            }
+            else
+            {
+                ans$status = paste(ans$status, "IntraDist", sep=",")
+            }
+        }
+    }
+
+    
     return(ans)
 }

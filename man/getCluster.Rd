@@ -4,7 +4,7 @@
 size and using user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
-order = NULL, sites_orientation = NULL, verbose = FALSE)
+order = NULL, sites_orientation = NULL, intra_distance = 0, verbose = FALSE)
 
 }
 \description{
@@ -45,6 +45,10 @@ defined window size and satisfiying user defined categorical conditions.
     \item{sites_orientation}{vector; A vector containing the orientation 
                         of the sites specified by the user. 
                         By default it is set to NULL}
+    \item{intra_distance}{number; either positive or negative integer defining 
+                        the maximum or minimum distance between 
+                        sites in clusters.
+                        By default it is set to 0}
     \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is

@@ -237,6 +237,15 @@ t22 = GRanges(
     status = as.character(c("SitesOrientation","orderFail"))
 )
 
+t23 = GRanges(
+    seqnames = Rle("chr1",4),
+    ranges = IRanges(start = c(11L, 26L, 41L, 43L), end = c(30L, 56L, 70L, 70L)),
+    strand = Rle("*",4),
+    sites = as.character(c("s1,s2,s3","s3,s2,s1","s2,s1,s3","s1,s3")),
+    isCluster = as.logical(c(FALSE, FALSE, FALSE, FALSE)),
+    status = as.character(c("ExcludedSites","ExcludedSites,IntraDist","ExcludedSites,IntraDist","IntraDist"))
+)
+
 test_getCluster <- function() {
     #general test t1#
     checkEquals(getCluster(x1, w = 11, c = c("s1" = 1, "s2" = 1), greedy = FALSE, order = c("s1","s2"), s = "+", verbose = TRUE), t1)
@@ -286,4 +295,6 @@ test_getCluster <- function() {
     checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("+","-"), verbose= TRUE), t21)
     #test t23 - get FALSE cluster using sites_orientation option - greedy = TRUE
     checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("-","+"), verbose= TRUE), t22)
+    #test t24 - get FALSE clusters using intra_distance option
+    checkEquals(getCluster(x4, w = 30, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, intra_distance=2, verbose = TRUE), t23)
 }
