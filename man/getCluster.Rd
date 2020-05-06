@@ -3,8 +3,8 @@
 \title{Detect clusters of genomic features (i.e TFBS) in a specified window 
 size and using user defined options}
 \usage{
-getCluster(x, w, c, overlap = 0, greedy = TRUE, seqnames = NULL, s = "*",
-order = NULL, verbose = FALSE)
+getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
+order = NULL, sites_orientation = NULL, intra_distance = 0, verbose = FALSE)
 
 }
 \description{
@@ -30,7 +30,7 @@ defined window size and satisfiying user defined categorical conditions.
             contain the exact combination of sites defined in "c".
             If TRUE, clusters containing the condition and more will
             be labeled as TRUE as long as window size is below or equal
-            the defined value. The default is set to TRUE}
+            the defined value. The default is set to FALSE}
 
     \item{seqnames}{character; seqname/chromosome to cluster on. 
     The default is set to NULL so the clustering 
@@ -42,6 +42,13 @@ defined window size and satisfiying user defined categorical conditions.
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contain. By default it is
                         set to NULL}
+    \item{sites_orientation}{vector; A vector containing the orientation 
+                        of the sites specified by the user. 
+                        By default it is set to NULL}
+    \item{intra_distance}{number; either positive or negative integer defining 
+                        the maximum or minimum distance between 
+                        sites in clusters.
+                        By default it is set to 0}
     \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is
@@ -76,7 +83,7 @@ cluster. When set to TRUE, getCluster will return clusters containing
 the required number of sites and more as long as the window size
 condition is satisfied. When set to FALSE, getCluster will return
 clusters containing the exact number of the required sites. Default is
-set to TRUE.
+set to FALSE.
 
 \emph{order} allows the user to choose whether the clusters should contain
 sites ordered in a certain way. When set to NULL, sites order is not
