@@ -404,7 +404,7 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
         if(intraDistance > 0){
         #if intraDistance is positive, it means sites should have min distance and above
             for(i in 1:(length(start_site)-1)){
-                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) <= intraDistance){
+                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) < intraDistance){
                     intra_distance_check <- TRUE
                     break
                 }
@@ -414,7 +414,7 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
         #if intraDistance is negative, it means sites should have max distance and below
         else if(intraDistance < 0){
             for(i in 1:(length(start_site)-1)){
-                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) >= abs(intraDistance)){
+                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) > abs(intraDistance)){
                     intra_distance_check <- TRUE
                     break
                 }
@@ -422,17 +422,11 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
         }
         
         if(intra_distance_check){
-            ans$logical = FALSE
             if(ans$status == "PASS"){
             ans$status = "IntraDist"
-            }
-            else
-            {
-                ans$status = paste(ans$status, "IntraDist", sep=",")
+            ans$logical = FALSE
             }
         }
     }
-
-    
     return(ans)
 }

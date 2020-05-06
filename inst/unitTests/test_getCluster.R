@@ -243,7 +243,7 @@ t23 = GRanges(
     strand = Rle("*",4),
     sites = as.character(c("s1,s2,s3","s3,s2,s1","s2,s1,s3","s1,s3")),
     isCluster = as.logical(c(FALSE, FALSE, FALSE, FALSE)),
-    status = as.character(c("ExcludedSites","ExcludedSites,IntraDist","ExcludedSites,IntraDist","IntraDist"))
+    status = as.character(c("ExcludedSites","ExcludedSites","ExcludedSites","IntraDist"))
 )
 
 test_getCluster <- function() {
