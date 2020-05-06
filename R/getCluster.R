@@ -2,9 +2,6 @@
 
 ##' @export getCluster
 
-
-
-
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, sites_orientation = NULL, 
                     intra_distance = 0, verbose = FALSE) {
@@ -60,7 +57,7 @@ in condition must be explicitly defined")
     }
 
     if(length(which(c<0))!=0 | !(is.numeric(c))){
-        stop("Only positive integers allowed")
+        stop("Only positive integers are allowed")
     }
 
     ## overlap will accept integers only
@@ -89,12 +86,12 @@ in condition must be explicitly defined")
     if(!(all(order %in% names(c))))
         stop("site names between order and condition do not match")
 
-    ##check number of sites if equal in condition and order
+    ##check if number of sites is equal betweeb condition and order
     if(greedy == FALSE){
         count_elements <- c(count(order)$freq)
         names(count_elements) <- count(order)$x
         if(!(all(sort(count_elements) == sort(c)))){
-            stop("Greedy is FALSE and order is larger than condition")
+            stop("Greedy is set to FALSE and order is larger than condition")
             }
         }
     }
@@ -106,25 +103,27 @@ in condition must be explicitly defined")
 
     #site orientation should be positive or negative
     if(!(all(sites_orientation %in% c("+","-")))){
-        stop('Strand should be only "+" or "-"')
+        stop('Site orientation should be "+" or "-"')
     }
 
     #site orientation input length should have same order length
     if(length(order) != length(sites_orientation) & 
         !(is.null(sites_orientation))){
-        stop("Orientation must be added to all sites in 'order' respectively")
+        stop("When specified, sites orientation must be defined to
+              all sites following 'order' option")
     }
 
     ##intra_distance should be either positive, negative or zero
     if(!(is.numeric(intra_distance) || intra_distance == 0)){
-        stop("Only integers allowed")
+        stop("Only integers are allowed for distance between sites")
     }
 
     ##check verbose input argument
     if( !(verbose %in% c("TRUE", "FALSE"))) {
-        stop("verbose should be TRUE or FALSE")
+        stop("Verbose should be TRUE or FALSE")
     }
 
+    ## n contains the total number of sites desired
     n = sum(c)
 
     ##getting sites found on the required seqnamesom
@@ -167,7 +166,7 @@ in condition must be explicitly defined")
                         "isCluster", "status")
 
 
-    ## looping over chromosomes 
+    ## looping over chromosomes and call cluster_sites
     for(seq in seq_along(unique_seqnames)){
 
         gr = subset(x, seqnames == unique_seqnames[seq])
@@ -232,9 +231,11 @@ load_data <- function(all_files, c) {
     return(df)
 }
 
-
-cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
-                        sitesToExclude, sites_orientation, intra_distance){
+## n contains the total number of sites desired
+## s contains strand
+## res is array for temporary results
+cluster_sites <- function(gr, w, c, overlap, n, res, s, greedy, order,
+                          sitesToExclude, sites_orientation, intra_distance){
 
     start_site <- start(gr)
     end_site <- end(gr)
@@ -430,3 +431,5 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
     }
     return(ans)
 }
+
+
