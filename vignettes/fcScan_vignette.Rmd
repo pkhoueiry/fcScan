@@ -64,7 +64,7 @@ based on user defined search criteria. Such criteria include:
 * A window size specifying the maximum cluster size allowed (required)
 * The combination of features required and/or to exclude (required)
 * The order of features required within identified clusters (optional)
-* The distance required or allowed overlap between identified clusters (optional)
+* The allowed distance or overlap between identified clusters (optional)
 * The strand(s) to build the clusters on (optional)
 * The seqname(s) to build the clusters on (optional)
 * The sites orientation to build the clusters on (optional)
