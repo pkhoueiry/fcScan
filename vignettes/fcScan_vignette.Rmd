@@ -253,8 +253,8 @@ sites/features, unless verbose is set to `TRUE`. If the combination,
 overlap and order options are satisfied, the cluster is considered a
 `TRUE` cluster. 
 
-The *status* of a cluster can be either PASS, excludedSites, orderFail 
-or siteOrientation.
+The *status* of a cluster can be either PASS, excludedSites, orderFail, 
+siteOrientation or siteOverlap
 `PASS` is a cluster that satisfied the desired combination, overlap, order
 and sites orientation.
 `orderFail` is a cluster that had the required combination but did not
