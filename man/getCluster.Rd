@@ -4,7 +4,7 @@
 size and using user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
-order = NULL, sites_orientation = NULL, intra_distance = 0, verbose = FALSE)
+order = NULL, site_orientation = NULL, site_overlap = 0, verbose = FALSE)
 
 }
 \description{
@@ -42,10 +42,10 @@ defined window size and satisfiying user defined categorical conditions.
     \item{order}{vector; A vector containing the order of sites the user
                         wants the clusters to contain. By default it is
                         set to NULL}
-    \item{sites_orientation}{vector; A vector containing the orientation 
+    \item{site_orientation}{vector; A vector containing the orientation 
                         of the sites specified by the user. 
                         By default it is set to NULL}
-    \item{intra_distance}{number; either positive or negative integer defining 
+    \item{site_overlap}{number; either positive or negative integer defining 
                         the maximum or minimum distance between 
                         sites in clusters.
                         By default it is set to 0}
@@ -112,7 +112,7 @@ The returned value is a GRanges object containing the clusters.
 
 \author{
 
-    Abdallah El-Kurdi
+    Abdullah El-Kurdi
 
     Ghiwa Khalil  
 

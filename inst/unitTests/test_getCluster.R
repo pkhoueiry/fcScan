@@ -142,7 +142,7 @@ t14 = GRanges(
     strand = Rle("*", 1),
     sites = as.character(c("s1,s2,s3")),
     isCluster = as.logical(Rle(FALSE, 1)),
-    status = as.character(Rle("ExcludedSites", 1))
+    status = as.character(Rle("excludedSites", 1))
 )
 
 t15 = GRanges(
@@ -151,7 +151,7 @@ t15 = GRanges(
     strand = Rle("*", 2),
     sites = as.character(c("s1,s2,s3", "s2,s3")),
     isCluster = as.logical(c(FALSE,TRUE)),
-    status = as.character(c("ExcludedSites", "PASS"))
+    status = as.character(c("excludedSites", "PASS"))
 )
 
 x5 = data.frame(seqnames = rep("chr1", times = 10),
@@ -166,7 +166,7 @@ t16 = GRanges(
     strand = Rle("*", 2),
     sites = as.character(c("s1,s2,s3,s2", "s2,s3,s2,s1")),
     isCluster = as.logical(c(FALSE, FALSE)),
-    status = as.character(c("ExcludedSites", "ExcludedSites"))
+    status = as.character(c("excludedSites", "excludedSites"))
 )
 
 x6 = data.frame(seqnames = rep("chr1", times = 10),
@@ -181,7 +181,7 @@ t17 = GRanges(
     strand = Rle("*", 3),
     sites = as.character(c("s1,s2,s2,s3", "s2,s2,s3,s1", "s1,s2,s2,s1")),
     isCluster = as.logical(c(FALSE, FALSE, TRUE)),
-    status = as.character(c("ExcludedSites", "ExcludedSites", "PASS"))
+    status = as.character(c("excludedSites", "excludedSites", "PASS"))
 )
 
 x7 = GRanges(
@@ -216,7 +216,7 @@ t20 = GRanges(
     strand = Rle("*",2),
     sites = as.character(c("s1,s2", "s2,s1")),
     isCluster = as.logical(c(FALSE, FALSE)),
-    status = as.character(c("SitesOrientation","orderFail"))
+    status = as.character(c("siteOrientation","orderFail"))
 )
 
 t21 = GRanges(
@@ -234,7 +234,7 @@ t22 = GRanges(
     strand = Rle("*",2),
     sites = as.character(c("s1,s2,s2", "s2,s1")),
     isCluster = as.logical(c(FALSE, FALSE)),
-    status = as.character(c("SitesOrientation","orderFail"))
+    status = as.character(c("siteOrientation","orderFail"))
 )
 
 t23 = GRanges(
@@ -243,7 +243,7 @@ t23 = GRanges(
     strand = Rle("*",4),
     sites = as.character(c("s1,s2,s3","s3,s2,s1","s2,s1,s3","s1,s3")),
     isCluster = as.logical(c(FALSE, FALSE, FALSE, FALSE)),
-    status = as.character(c("ExcludedSites","ExcludedSites","ExcludedSites","IntraDist"))
+    status = as.character(c("excludedSites","excludedSites","excludedSites","siteOverlap"))
 )
 
 test_getCluster <- function() {
@@ -279,22 +279,22 @@ test_getCluster <- function() {
     checkEquals(getCluster(x4, w = 20, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, verbose = TRUE), t14)
     #test t15 - get one TRUE cluster and one with excluded sites#
     checkEquals(getCluster(x4, w = 20, c = c("s1" = 0, "s2" = 1, "s3" = 1), greedy = TRUE, verbose = TRUE), t15)
-    #test t16 - get two ExcludedSites#
+    #test t16 - get two excludedSites#
     checkEquals(getCluster(x5, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), greedy = TRUE, verbose = TRUE), t16)
     #test t17 - similar to t16 but Greedy = FALSE
     checkEquals(getCluster(x5, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), greedy = FALSE, verbose = TRUE), NULL)
-    #test t18 - get three consecutive ExcludedSites and One TRUE cluster#
+    #test t18 - get three consecutive excludedSites and One TRUE cluster#
     checkEquals(getCluster(x6, w = 40, c = c("s1" = 1, "s2" = 2, "s3" = 0), order = c("s1", "s2", "s2"), greedy = TRUE, verbose = TRUE), t17)
     #test t19 - input GRanges#
     checkEquals(getCluster(x7, w = 25, c = c("s1"=1,"s2"=2)), t18)
-    #test t20 - get TRUE cluster using sites_orientation option - greedy = FALSE
-    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), sites_orientation= c("+","-"), verbose= TRUE), t19)
-    #test t21 - get FALSE cluster using sites_orientation option - greedy = FALSE
-    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), sites_orientation= c("-","+"), verbose= TRUE), t20)
-    #test t22 - get TRUE cluster using sites_orientation option - greedy = TRUE
-    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("+","-"), verbose= TRUE), t21)
-    #test t23 - get FALSE cluster using sites_orientation option - greedy = TRUE
-    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), sites_orientation= c("-","+"), verbose= TRUE), t22)
-    #test t24 - get FALSE clusters using intra_distance option
-    checkEquals(getCluster(x4, w = 30, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, intra_distance=2, verbose = TRUE), t23)
+    #test t20 - get TRUE cluster using site_orientation option - greedy = FALSE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), site_orientation= c("+","-"), verbose= TRUE), t19)
+    #test t21 - get FALSE cluster using site_orientation option - greedy = FALSE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), order= c("s1","s2"), site_orientation= c("-","+"), verbose= TRUE), t20)
+    #test t22 - get TRUE cluster using site_orientation option - greedy = TRUE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), site_orientation= c("+","-"), verbose= TRUE), t21)
+    #test t23 - get FALSE cluster using site_orientation option - greedy = TRUE
+    checkEquals(getCluster(x3, w= 20, c= c("s1"=1,"s2"=1), greedy= TRUE, order= c("s1","s2"), site_orientation= c("-","+"), verbose= TRUE), t22)
+    #test t24 - get FALSE clusters using site_overlap option
+    checkEquals(getCluster(x4, w = 30, c = c("s1" = 1, "s2" = 0, "s3" = 1), greedy = TRUE, site_overlap=2, verbose = TRUE), t23)
 }
