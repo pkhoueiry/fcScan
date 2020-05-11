@@ -25,7 +25,6 @@ defined window size and satisfiying user defined categorical conditions.
                 it will correspond to the minimum gap allowed between
                 consecutive clusters. The default is set to 0}
 
-
     \item{greedy}{logical; If FALSE, the formed clusters will
             contain the exact combination of sites defined in "c".
             If TRUE, clusters containing the condition and more will
@@ -36,24 +35,28 @@ defined window size and satisfiying user defined categorical conditions.
     The default is set to NULL so the clustering 
     will be performed on all seqnames}
 
-    \item{s}{character; Strand to cluster on. Can be "+", "-" or
+    \item{s}{character; The strand to cluster on. Can be "+", "-" or
                 "*". The default is set to "*" which indicate both clusters}
 
-    \item{order}{vector; A vector containing the order of sites the user
-                        wants the clusters to contain. By default it is
-                        set to NULL}
-    \item{site_orientation}{vector; A vector containing the orientation 
-                        of the sites specified by the user. 
-                        By default it is set to NULL}
-    \item{site_overlap}{number; either positive or negative integer defining 
-                        the maximum or minimum distance between 
-                        sites in clusters.
-                        By default it is set to 0}
+    \item{order}{vector; A vector containing the desired order of sites 
+                        within the identified clusters.
+                        The default is set to NULL indicating that the 
+                        order of sites is not important}
+                        
+    \item{site_orientation}{vector; A vector containing the desired
+                        orientation of the sites within the identified
+                        clusters. The default is set to NULL}
+                        
+    \item{site_overlap}{numeric; Same as "overlap" but for sites.
+                      If negative, it will correspond to the maximum
+                      overlap allowed between consecutive sites. If positive,
+                      it will correspond to the minimum gap allowed between
+                      consecutive sites. The default is set to 0}
+                      
     \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is
                         set to FALSE}
-
 }
 
 \details{
