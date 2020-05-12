@@ -1,5 +1,4 @@
 *.git
 *.Rproj.user
-./.DS_Store
+.*
 ./fcScan_gitlab.Rproj
-./.Rhistory
