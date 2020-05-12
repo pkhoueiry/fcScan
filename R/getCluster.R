@@ -2,12 +2,9 @@
 
 ##' @export getCluster
 
-
-
-
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
-                    s = "*" , order = NULL, sites_orientation = NULL, 
-                    intra_distance = 0, verbose = FALSE) {
+                    s = "*" , order = NULL, site_orientation = NULL, 
+                    site_overlap = 0, verbose = FALSE) {
 
     sitesToExclude <- NULL
     final = NULL
@@ -35,7 +32,7 @@ in condition must be explicitly defined")
     else if(is(x, "GRanges")){
         x
     }    
-      
+    
     else {
         ## print("File(s) input")
         if (length(c) != length(x))
@@ -60,7 +57,7 @@ in condition must be explicitly defined")
     }
 
     if(length(which(c<0))!=0 | !(is.numeric(c))){
-        stop("Only positive integers allowed")
+        stop("Only positive integers are allowed")
     }
 
     ## overlap will accept integers only
@@ -89,42 +86,44 @@ in condition must be explicitly defined")
     if(!(all(order %in% names(c))))
         stop("site names between order and condition do not match")
 
-    ##check number of sites if equal in condition and order
+    ##check if number of sites is equal betweeb condition and order
     if(greedy == FALSE){
         count_elements <- c(count(order)$freq)
         names(count_elements) <- count(order)$x
         if(!(all(sort(count_elements) == sort(c)))){
-            stop("Greedy is FALSE and order is larger than condition")
+            stop("Greedy is set to FALSE and order is larger than condition")
             }
         }
     }
     
     #site orientation works only if order is provided
-    if(!(is.null(sites_orientation)) & is.null(order)){
-        stop("sites_orientation cannot be used unless order is specified")
+    if(!(is.null(site_orientation)) & is.null(order)){
+        stop("site_orientation cannot be used unless order is specified")
     }
 
     #site orientation should be positive or negative
-    if(!(all(sites_orientation %in% c("+","-")))){
-        stop('Strand should be only "+" or "-"')
+    if(!(all(site_orientation %in% c("+","-")))){
+        stop('Site orientation should be "+" or "-"')
     }
 
     #site orientation input length should have same order length
-    if(length(order) != length(sites_orientation) & 
-        !(is.null(sites_orientation))){
-        stop("Orientation must be added to all sites in 'order' respectively")
+    if(length(order) != length(site_orientation) & 
+        !(is.null(site_orientation))){
+        stop("When specified, sites orientation must be defined to
+        all sites following 'order' option")
     }
 
-    ##intra_distance should be either positive, negative or zero
-    if(!(is.numeric(intra_distance) || intra_distance == 0)){
-        stop("Only integers allowed")
+    ##site_overlap should be either positive, negative or zero
+    if(!(is.numeric(site_overlap) || site_overlap == 0)){
+        stop("Only integers are allowed for distance between sites")
     }
 
     ##check verbose input argument
     if( !(verbose %in% c("TRUE", "FALSE"))) {
-        stop("verbose should be TRUE or FALSE")
+        stop("Verbose should be TRUE or FALSE")
     }
 
+    ## n contains the total number of sites desired
     n = sum(c)
 
     ##getting sites found on the required seqnamesom
@@ -167,7 +166,7 @@ in condition must be explicitly defined")
                         "isCluster", "status")
 
 
-    ## looping over chromosomes 
+    ## looping over chromosomes and call cluster_sites
     for(seq in seq_along(unique_seqnames)){
 
         gr = subset(x, seqnames == unique_seqnames[seq])
@@ -176,7 +175,7 @@ in condition must be explicitly defined")
         if (length(gr) >= n) {
             result = cluster_sites(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
-                        sites_orientation, intra_distance)
+                        site_orientation, site_overlap)
             final = rbind(final, result)
         }
     }
@@ -232,9 +231,11 @@ load_data <- function(all_files, c) {
     return(df)
 }
 
-
-cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
-                        sitesToExclude, sites_orientation, intra_distance){
+## n contains the total number of sites desired
+## s contains strand
+## res is array for temporary results
+cluster_sites <- function(gr, w, c, overlap, n, res, s, greedy, order,
+                        sitesToExclude, site_orientation, site_overlap){
 
     start_site <- start(gr)
     end_site <- end(gr)
@@ -242,14 +243,19 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
     site <- gr$site
     exclusion_ls <- sitesToExclude
     strand <- as.vector(strand(gr))
-    sites_orientation_input <- sites_orientation
-    intraDistance <- intra_distance
+    site_orientation_input <- site_orientation
+    site_overlap_input <- site_overlap
 
     isCluster <- FALSE
 
+    #upper_boundary controls looping limit
     if (greedy == FALSE) {
+        # number of sites to be searched must be respected
+        # and looping should be made to fit the number of sites in condition
+        # because cluster should have max size of 'n' sites
         upper_boundary = length(gr) - n + 1
     } else {
+        #greedy = TRUE, no limit on number of sites in the cluster
         upper_boundary = length(gr)
     }
     for (i in seq_len(upper_boundary)) {
@@ -269,11 +275,14 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
             }
         }
         if (greedy == TRUE) {
-            end = end(gr)[end(gr) <= start_site[i] + w & end(gr)>= end_site[i]]
+            end = end(gr)[end(gr) <= start_site[i] + w]
             end = end[length(end)]
             if(end_check == 0){
                 end_check = end
                 iEnd = which(end(gr) == end)[1]
+                # Cluster of sites to be checked (ls),
+                # their orientation (so),
+                # their start and end coordinates (sc and ec respectively)
                 ls <- site[i:iEnd]
                 so <- strand[i:iEnd]
                 sc <- start_site[i:iEnd]
@@ -307,8 +316,8 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
         }
 
         ## checking if required sites are present
-        ans <- testCombn(ls, c, order, exclusion_ls,so,sites_orientation_input, 
-                sc, ec, intraDistance)
+        ans <- testCombn(ls, c, order, exclusion_ls,so,site_orientation_input, 
+                sc, ec, site_overlap_input)
         isCluster = ans$logical
         status = ans$status
 
@@ -319,7 +328,7 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
 
         res[i, "seqnames"] <- as.character(seqnames(gr)[i])
         res[i, "start"] <- start_site[i]
-        res[i, "end"] <- end
+        res[i, "end"] <- max(ec)
         res[i, "strand"] <- s
         res[i, "status"] <- ans$status
         if (greedy == TRUE) {
@@ -341,14 +350,14 @@ cluster_sites<-function(gr, w, c, overlap, n, res, s, greedy, order,
     return(res)
 }
 
-testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input, 
-                    start_site, end_site, intraDistance) {
+testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation, 
+                    start_site, end_site, s_overlap) {
     ans <- list()
     temp <- NULL
-    check <- FALSE
-    intra_distance_check <- FALSE
+    site_orientation_check <- FALSE
+    site_overlap_check <- FALSE
 
-
+    #check for minimum number of sites if satisfying condition
     for (key in names(c)) {
         if (sum((ls == key)) < c[key]) {
             ans$logical = FALSE
@@ -360,28 +369,29 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
     if(is.null(order)){ ## order doesn't matter
         ans$logical = TRUE
         ans$status = "PASS"
-    }else{
+    }else{ # check for order validity
         if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE 
-            & is.null(s_orientation_input))
+            & is.null(s_orientation))
         {
             ans$logical = TRUE
             ans$status = "PASS"
         }
+        # check for sites orientation validity 
         else if(grepl(paste(order,collapse=";"),paste(ls,collapse=";")) == TRUE 
-            & !(is.null(s_orientation_input))){
-            for(i in 1:length(ls)){
+            & !(is.null(s_orientation))){
+            for(i in seq_along(ls)){#use of seq_along as advised by BiocCheck
                 temp <- as.vector(na.omit(ls[i:(i+length(order)-1)]))
                 if((length(temp) == length(order)) && (all(temp == order)) && 
                     (all(as.vector(na.omit(so[i:(i+length(order)-1)] 
-                        == s_orientation_input))))){
-                    check <- TRUE
+                        == s_orientation))))){
+                    site_orientation_check <- TRUE
             }}
-            if(check){
+            if(site_orientation_check){
             ans$logical = TRUE
             ans$status = "PASS"
         }else{
             ans$logical = FALSE
-            ans$status = "SitesOrientation"
+            ans$status = "siteOrientation"
             }
         }
         else{
@@ -390,49 +400,48 @@ testCombn <- function(ls, c, order, sitesToExclude, so, s_orientation_input,
         }
     }
     
-    
+    # check for excluded sites - zero sites in condition
     if(!(is.null(sitesToExclude))){
         for (exc_site in sitesToExclude){
             if(length(grep(exc_site, ls, value = TRUE))>0){
             ans$logical = FALSE
-            ans$status = "ExcludedSites"
+            ans$status = "excludedSites"
         }
         }
     }
 
-    if(intraDistance != 0){
-        if(intraDistance > 0){
-        #if intraDistance is positive, it means sites should have min distance and above
-            for(i in 1:(length(start_site)-1)){
-                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) <= intraDistance){
-                    intra_distance_check <- TRUE
+    # check for distance between sites within cluster
+    if(s_overlap != 0){
+        if(s_overlap > 0){
+        #if s_overlap is positive, 
+        #it means sites should have min distance and above
+            for(i in seq_len(length(start_site)-1)){
+                if((cbind(start_site, end_site)[(i+1),1]) - 
+                    (cbind(start_site, end_site)[(i),2]) < s_overlap){
+                    site_overlap_check <- TRUE
                     break
                 }
             }
         }
 
-        #if intraDistance is negative, it means sites should have max distance and below
-        else if(intraDistance < 0){
-            for(i in 1:(length(start_site)-1)){
-                if((cbind(start_site, end_site)[(i+1),1]) - (cbind(start_site, end_site)[(i),2]) >= abs(intraDistance)){
-                    intra_distance_check <- TRUE
+        #if s_overlap is negative, 
+        #it means sites should have max distance and below
+        else if(s_overlap < 0){
+            for(i in seq_len(length(start_site)-1)){
+                if((cbind(start_site, end_site)[(i+1),1]) - 
+                    (cbind(start_site, end_site)[(i),2]) > abs(s_overlap)){
+                    site_overlap_check <- TRUE
                     break
                 }
             }
         }
         
-        if(intra_distance_check){
-            ans$logical = FALSE
+        if(site_overlap_check){
             if(ans$status == "PASS"){
-            ans$status = "IntraDist"
-            }
-            else
-            {
-                ans$status = paste(ans$status, "IntraDist", sep=",")
+            ans$status = "siteOverlap"
+            ans$logical = FALSE
             }
         }
     }
-
-    
     return(ans)
 }

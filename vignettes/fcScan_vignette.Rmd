@@ -1,7 +1,7 @@
 ---
 title: "fcScan: features cluster Scan"
 author:
-- name: Abdallah El-Kurdi
+- name: Abdullah El-Kurdi
   affiliation: 
   - &id1 American University of Beirut, Beirut, Lebanon
   email: ak161@aub.edu.lb
@@ -64,7 +64,7 @@ based on user defined search criteria. Such criteria include:
 * A window size specifying the maximum cluster size allowed (required)
 * The combination of features required and/or to exclude (required)
 * The order of features required within identified clusters (optional)
-* The distance required or allowed overlap between identified clusters (optional)
+* The allowed distance or overlap between identified clusters (optional)
 * The strand(s) to build the clusters on (optional)
 * The seqname(s) to build the clusters on (optional)
 * The sites orientation to build the clusters on (optional)
@@ -211,23 +211,23 @@ the desired order. For example if a cluster has `a, a, b, b, b` sites, it
 satisfies the required order (a, b, b) and therefore will be considered as
 a correct cluster . (Default is set to **NULL**)
 
-## Sites Orientation (sites_orientation)
-The `sites_orientation` option defines the orientation or strandness of sites
+## Sites Orientation (site_orientation)
+The `site_orientation` option defines the orientation or strandness of sites
 in the found clusters. This option cannot be used if `order` is `NULL`.
-`sites_orientation` should be specified for each site in `order`.
-For instance, if `order = c("a","b","b")`, we can define `sites_orientation`
-for each site respectively as follow: `sites_orientation = c("+","-","-")`.
+`site_orientation` should be specified for each site in `order`.
+For instance, if `order = c("a","b","b")`, we can define `site_orientation`
+for each site respectively as follow: `site_orientation = c("+","-","-")`.
 The cluster will be correct if it satisfies the required order and sites
 orientation. (Default is set to **NULL**)
 
-## Distance between sites in clusters (intra_distance)
-The `intra_distance` option defines the maximum or minimum distance allowed
+## Distance between sites in clusters (site_overlap)
+The `site_overlap` option defines the maximum or minimum distance allowed
 between sites in the cluster. 
-When `intra_distance` is a positive integer, sites within a cluster should have
+When `site_overlap` is a positive integer, sites within a cluster should have
 `minimum distance and above`, then the cluster is considered `TRUE` cluster.
-When `intra_distance` is a negative integer, sites within a cluster should 
+When `site_overlap` is a negative integer, sites within a cluster should 
 have `max distance and below`, then the cluster is considered `TRUE` cluster.
-When `intra_distance` is zero, distance between sites is not taken into 
+When `site_overlap` is zero, distance between sites is not taken into 
 consideration. (Default is set to **0**)
 
 ## Verbose (verbose)
@@ -253,17 +253,17 @@ sites/features, unless verbose is set to `TRUE`. If the combination,
 overlap and order options are satisfied, the cluster is considered a
 `TRUE` cluster. 
 
-The *status* of a cluster can be either PASS, ExcludedSites, orderFail 
-or SitesOrientation.
+The *status* of a cluster can be either PASS, excludedSites, orderFail, 
+siteOrientation or siteOverlap
 `PASS` is a cluster that satisfied the desired combination, overlap, order
 and sites orientation.
 `orderFail` is a cluster that had the required combination but did not
 satisfy the required order of sites.
-`ExcludedSites` is a cluster that had the required combination and order
+`excludedSites` is a cluster that had the required combination and order
 but it has one or more sites to exclude.
-`SitesOrientation` is a cluster that had the required combination and order
+`siteOrientation` is a cluster that had the required combination and order
 but it has one or more sites with different orientation than requested.
-`IntraDist` is a cluster that meets all the requirements
+`siteOverlap` is a cluster that meets all the requirements
 but the distance between its sites is not respected.
 
 NOTE: If the user is using `greedy = FALSE` and `order` contains values more
@@ -298,10 +298,10 @@ if the cluster fails to conform with the condition or order.
 `FALSE`, status shows why the found cluster is not a `TRUE` cluster. If the
 order of sites is not respected in the found cluster, status would return 
 `OrderFail`. in Addition, if the cluster found contains non desired sites, 
-it returns `ExcludedSites`. Moreover, if the sites orientation is not 
-respected in found cluster, status would return `SitesOrientation`.
+it returns `excludedSites`. Moreover, if the sites orientation is not 
+respected in found cluster, status would return `siteOrientation`.
 Finally , if the distance between sites in the cluster found does not conform 
-to the condition specified by the user, status would return `IntraDist`.
+to the condition specified by the user, status would return `siteOverlap`.
 
 In this example, we ask `getCluster` to look for clusters that contains
 one site "s1", one site "s2" and zero "s3" sites. In addition, we requested
@@ -318,8 +318,8 @@ x1 = data.frame(seqnames = rep("chr1", times = 17),
         "s2","s1","s2","s1","s1","s2"))
 
 clusters = getCluster(x1, w = 20, c = c("s1" = 1, "s2" = 1, "s3" = 0), 
-    greedy = TRUE, order = c("s1","s2"), sites_orientation=c("+","+"), 
-    intra_distance = 2, verbose = TRUE)
+    greedy = TRUE, order = c("s1","s2"), site_orientation=c("+","+"), 
+    site_overlap = 2, verbose = TRUE)
 
 clusters
 ```
