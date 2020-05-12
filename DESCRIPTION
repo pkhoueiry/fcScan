@@ -1,7 +1,7 @@
 Package:fcScan
 Type: Package
 Title: fcScan for detecting clusters of coordinates with user defined options
-Version: 1.2.1
+Version: 1.3.0
 biocViews: GenomeAnnotation, Clustering
 Author: Abdullah El-Kurdi <ak161@aub.edu.lb> Ghiwa khalil <gk39@aub.edu.lb> Georges Khazen <gkhazen@lau.edu.lb> Pierre Khoueiry <pk17@aub.edu.lb>
 Maintainer: Pierre Khoueiry <pk17@aub.edu.lb> Abdallah El-Kurdi <ak161@aub.edu.lb>
