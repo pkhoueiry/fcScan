@@ -22,9 +22,9 @@ Installation
 
 1. Git clone the project directory `git clone https://github.com/pkhoueiry/fcScan.git`
 2. From the terminal run `R CMD build fcScan`
-3. Run `R CMD check fcScan_1.2.1.tar.gz`
-4. Run  `R CMD BiocCheck fcScan_1.2.1.tar.gz`
-5. Install package by `R CMD INSTALL fcScan_1.2.1.tar.gz`
+3. Run `R CMD check fcScan_1.3.1.tar.gz`
+4. Run  `R CMD BiocCheck fcScan_1.3.1.tar.gz`
+5. Install package by `R CMD INSTALL fcScan_1.3.1.tar.gz`
 6. Start R and load library using `library(fcScan)`
 
 
