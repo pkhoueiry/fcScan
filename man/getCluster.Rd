@@ -88,7 +88,7 @@ defined window size and satisfiying user defined categorical conditions.
                     regardless of the amount of overlap. 
                     The default is set to NULL}
 
-    \item{verbose}{logical; A If FALSE, only clusters that passed
+    \item{verbose}{logical; If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is
                         set to FALSE}
