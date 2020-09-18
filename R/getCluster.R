@@ -622,7 +622,6 @@ cluster_by_greedy_false <- function(gr, w, c, overlap, n, res, s, greedy, order,
                 (end_site[(i+n-1)]-(w+end_site[i])))/(end_site[(i+n-1)]
                 - start_site[(i+n-1)]))>=partial_overlap_percentage){
             
-            print(end_site[(i+n-1)] - start_site[(i+n-1)])
                     ls <- site[i:((i+n)-1)]
                     sc <- start_site[i:((i+n)-1)]
                     ec <- end_site[i:((i+n)-1)]

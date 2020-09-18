@@ -393,6 +393,42 @@ t39 = GRanges(
     status = as.character(Rle("PASS",5))
 )
 
+t40 = GRanges(
+	seqnames = Rle("chr1",6), 
+	ranges = IRanges(start = c(11L,26L,28L,95L,100L,108L), end = c(20L,35L,40L,105L,113L,120L)), 
+	strand = Rle("*",6), 
+	sites = as.character(c("s1,s2","s2,s1","s1,s2","s2,s1","s1,s2","s2,s1")), 
+	isCluster = as.logical(Rle(TRUE, 6)), 
+	status = as.character(Rle("PASS",6))
+)
+
+t41 = GRanges(
+	seqnames = Rle("chr1",5), 
+	ranges = IRanges(start = c(11L,26L,95L,100L,108L), end = c(20L,40L,105L,113L,120L)), 
+	strand = Rle("*",5), 
+	sites = as.character(c("s1,s2","s2,s1,s2","s2,s1","s1,s2","s2,s1")), 
+	isCluster = as.logical(Rle(TRUE, 5)), 
+	status = as.character(Rle("PASS",5))
+)
+
+t42 = GRanges(
+	seqnames = Rle("chr1",9), 
+	ranges = IRanges(start = c(11L,26L,28L,33L,61L,95L,100L,108L,122L), end = c(20L,35L,40L,48L,75L,105L,113L,120L,135L)), 
+	strand = Rle("*",9), 
+	sites = as.character(c("s1,s2","s2,s1","s1,s2","s2,s1","s2,s1","s2,s1","s1,s2","s2,s1","s1,s2")), 
+	isCluster = as.logical(Rle(TRUE, 9)), 
+	status = as.character(Rle("PASS",9))
+)
+
+t43 = GRanges(
+	seqnames = Rle("chr1",8), 
+	ranges = IRanges(start = c(11L,26L,33L,61L,88L,100L,108L,122L), end = c(20L,40L,48L,75L,105L,113L,120L,135L)), 
+	strand = Rle("*",8), 
+	sites = as.character(c("s1,s2","s2,s1,s2","s2,s1","s2,s1","s2,s2,s1","s1,s2","s2,s1","s1,s2")), 
+	isCluster = as.logical(Rle(TRUE, 8)), 
+	status = as.character(Rle("PASS",8))
+)
+
 test_getCluster <- function() {
     #general test t1#
     checkEquals(getCluster(x1, w = 11, c = c("s1" = 1, "s2" = 1), greedy = FALSE, order = c("s1","s2"), s = "+", verbose = TRUE), t1)
@@ -476,4 +512,13 @@ test_getCluster <- function() {
     checkEquals(getCluster(x1, w = 20, c = c("s1" = 2, "s2" = 1), greedy = TRUE, cluster_by="ends", include_partial_sites=FALSE, allow_clusters_overlap = FALSE, verbose = TRUE), t38)
     #test t40 - cluster_by = 'middles', greedy = F, no overlapping clusters allowed and with include_partial_sites = FALSE
 	checkEquals(getCluster(x1, w = 7, c = c("s1" = 1, "s2" = 1), greedy = FALSE, cluster_by="middles", allow_clusters_overlap = TRUE, verbose = TRUE), t39)
+    # test t41 - cluster_by = 'startsEnds', greedy = F, include_partial_sites = TRUE, allow_clusters_overlap = TRUE and partial_overlap_percentage=0.3
+    checkEquals(getCluster(x1, w = 10, c = c("s1" = 1, "s2" = 1), greedy = FALSE, cluster_by="startsEnds", include_partial_sites=TRUE, allow_clusters_overlap = TRUE, partial_overlap_percentage=0.3, verbose = TRUE), t40)
+    # test t42 - cluster_by = 'startsEnds', greedy = T, include_partial_sites = TRUE, allow_clusters_overlap = TRUE and partial_overlap_percentage=0.3
+    checkEquals(getCluster(x1, w = 10, c = c("s1" = 1, "s2" = 1), greedy = TRUE, cluster_by="startsEnds", include_partial_sites=TRUE, allow_clusters_overlap = TRUE, partial_overlap_percentage=0.3, verbose = TRUE), t41)
+    # test t43 - cluster_by = 'ends', greedy = F, include_partial_sites = TRUE, allow_clusters_overlap = TRUE and partial_overlap_percentage=0.6
+    checkEquals(getCluster(x1, w = 10, c = c("s1" = 1, "s2" = 1), greedy = FALSE, cluster_by="ends", include_partial_sites=TRUE, allow_clusters_overlap = TRUE, partial_overlap_percentage=0.6, verbose = TRUE), t42)
+    # test t43 - cluster_by = 'ends', greedy = T, include_partial_sites = TRUE, allow_clusters_overlap = TRUE and partial_overlap_percentage=0.6
+    checkEquals(getCluster(x1, w = 10, c = c("s1" = 1, "s2" = 1), greedy = TRUE, cluster_by="ends", include_partial_sites=TRUE, allow_clusters_overlap = TRUE, partial_overlap_percentage=0.6, verbose = TRUE), t43)
+
 }
