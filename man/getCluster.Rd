@@ -4,7 +4,10 @@
 size and using user defined options}
 \usage{
 getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
-order = NULL, site_orientation = NULL, site_overlap = 0, verbose = FALSE)
+order = NULL, site_orientation = NULL, site_overlap = 0, 
+cluster_by = "startsEnds", allow_clusters_overlap = FALSE, 
+include_partial_sites = FALSE, partial_overlap_percentage= NULL, 
+verbose = FALSE)
 
 }
 \description{
@@ -48,11 +51,43 @@ defined window size and satisfiying user defined categorical conditions.
                         clusters. The default is set to NULL}
                         
     \item{site_overlap}{numeric; Same as "overlap" but for sites.
-                      If negative, it will correspond to the maximum
-                      overlap allowed between consecutive sites. If positive,
-                      it will correspond to the minimum gap allowed between
-                      consecutive sites. The default is set to 0}
-                      
+                    If negative, it will correspond to the maximum
+                    overlap allowed between consecutive sites. If positive,
+                    it will correspond to the minimum gap allowed between
+                    consecutive sites. The default is set to 0}
+
+    \item{cluster_by}{vector; A vector containing one clustering option.
+                    A clustering option is the way in which sites in 
+                    input data are scanned. For example, if we choose "starts",
+                    the clustering begins at the start of the first site and 
+                    it ends at the start of the last site within the window 
+                    size. It can be "startsEnds", "endsStarts", "starts", 
+                    "ends", or "middles". The default is set to "startsEnds"}
+
+    \item{allow_clusters_overlap}{logical; This option can be only used when
+                    "cluster_by" is assigned. It allows to control whether 
+                    the user wants to have overlapping clusters or not. 
+                    The default is FALSE}
+
+    \item{include_partial_sites}{logical; This option can be only used in case
+                    where the "cluster_by" choosen is "startsEnds" or "ends".
+                    If it is set to TRUE, partially overlapping sites within 
+                    window size (at the end of the cluster) are allowed. 
+                    However, if it is set to FALSE, partially overlapping sites
+                    are not included in the cluster found. 
+                    The default is set to FALSE}
+
+    \item{partial_overlap_percentage}{numeric; This option can be only used in 
+                    case where the "cluster_by" choosen is "startsEnds" or 
+                    "ends".
+                    it ranges from 0 to 1. If it is set, partially overlapping
+                    sites that overlap with the window size 
+                    (at the end of the cluster) by this percentage are allowed.
+                    However, if it is set to 0, it means that all partially 
+                    overlapping sites are included in the cluster found 
+                    regardless of the amount of overlap. 
+                    The default is set to NULL}
+
     \item{verbose}{logical; A If FALSE, only clusters that passed
                         combination condition are shown. used for
                         debugging purposes. By default it is
@@ -93,6 +128,14 @@ sites ordered in a certain way. When set to NULL, sites order is not
 important.
 When defined, the order of the sites in the cluster must abide by the
 user defined order. Default is NULL.
+
+\emph{cluster_by} is the way in which sites in input data are scanned.
+For example, if we choose "starts", the clustering begins at the start
+of the first site and it ends at the start of the last site within the 
+window size. Also, if we choose "ends", the clustering begins at the end
+of the first site and it ends at the end of the last site within the 
+window size. It can be "startsEnds", "endsStarts", "starts", "ends", 
+or "middles".
 }
 
 \examples{

@@ -4,7 +4,10 @@
 
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, site_orientation = NULL, 
-                    site_overlap = 0, verbose = FALSE) {
+                    site_overlap = 0, cluster_by = "startsEnds", 
+                    allow_clusters_overlap = FALSE, 
+                    include_partial_sites = FALSE, 
+                    partial_overlap_percentage= NULL, verbose = FALSE) {
 
     sitesToExclude <- NULL
     final = NULL
@@ -91,7 +94,7 @@ in condition must be explicitly defined")
         count_elements <- c(count(order)$freq)
         names(count_elements) <- count(order)$x
         if(!(all(sort(count_elements) == sort(c)))){
-            stop("Greedy is set to FALSE and order is larger than condition")
+            stop("Greedy is FALSE and order is smaller/larger than condition")
             }
         }
     }
@@ -116,6 +119,53 @@ in condition must be explicitly defined")
     ##site_overlap should be either positive, negative or zero
     if(!(is.numeric(site_overlap) || site_overlap == 0)){
         stop("Only integers are allowed for distance between sites")
+    }
+
+    ##check cluster_by input
+    if(!(cluster_by %in% c("startsEnds","endsStarts","starts",
+            "ends","middles")) || length(cluster_by)>1 || is.null(cluster_by)){
+        stop("Invalid cluster_by option")
+    }
+
+    ##check allow_clusters_overlap usage
+    #if(is.null(cluster_by) && allow_clusters_overlap == TRUE){
+    #    warning("Use 'allow_clusters_overlap' when 'cluster_by' is assigned")
+    #}
+
+    ##check include_partial_sites usage (1)
+    #if(is.null(cluster_by) && include_partial_sites == TRUE){
+    #    warning("Use 'include_partial_sites' when 'cluster_by' is assigned")
+    #}
+    
+    ##check include_partial_sites usage (2)
+    if(!(cluster_by %in% c("startsEnds","ends")) 
+        && include_partial_sites == TRUE){
+        warning("Use 'include_partial_sites' only with 'startsEnds' or 'ends'")
+    }
+
+    ##check partial_overlap_percentage (1)
+    if(!is.null(partial_overlap_percentage) && 
+        !is.numeric(partial_overlap_percentage)){
+            stop("Invalid partial_overlap_percentage input")
+        }
+            
+    ##check partial_overlap_percentage (2)
+    if(is.numeric(partial_overlap_percentage) && 
+        (length(partial_overlap_percentage)>1 || 
+        partial_overlap_percentage > 1 || 
+        partial_overlap_percentage < 0)){
+            stop("Invalid partial_overlap_percentage input")
+        }
+
+    ##check if partial_overlap_percentage equals zero
+    if(!is.null(partial_overlap_percentage) && 
+        partial_overlap_percentage == 0){
+        partial_overlap_percentage = NULL
+    }
+
+    ##check if partial_overlap_percentage is used without include_partial_sites
+    if(!(is.null(partial_overlap_percentage)) && !include_partial_sites){
+        warning("partial_overlap_percentage ignored - include_partial_sites=F")
     }
 
     ##check verbose input argument
@@ -173,13 +223,37 @@ in condition must be explicitly defined")
         gr = sort(gr, ignore.strand = TRUE)
 
         if (length(gr) >= n) {
+            #cluster_by is NULL - default algorithm is used
+            if(is.null(cluster_by)){
             result = cluster_sites(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
                         site_orientation, site_overlap)
             final = rbind(final, result)
+            }
+
+            #valid cluster_by option and greedy = FALSE
+            else if(!is.null(cluster_by) && greedy == FALSE){
+                result = cluster_by_greedy_false(gr, w, c, overlap, n,
+                    res, s, greedy, order, sitesToExclude, 
+                    site_orientation, site_overlap, allow_clusters_overlap,
+                    cluster_by, include_partial_sites, 
+                    partial_overlap_percentage)
+            final = rbind(final, result)
+            }
+
+            #valid cluster_by option and greedy = TRUE
+            else if(!is.null(cluster_by) && greedy == TRUE){
+                result = cluster_by_greedy_true(gr, w, c, overlap, n,
+                    res, s, greedy, order, sitesToExclude, 
+                    site_orientation, site_overlap, allow_clusters_overlap,
+                    cluster_by, include_partial_sites, 
+                    partial_overlap_percentage)
+            final = rbind(final, result)
+            }
         }
     }
 
+    #Get final result
     if(length(final) !=0 ){
         final <- GRanges(
             seqnames = as.character(final[,1]), 
@@ -212,6 +286,7 @@ in condition must be explicitly defined")
 
 
 load_data <- function(all_files, c) {
+    #Case when input is BED and/or VCF files
     df = NULL
     for(i in seq_along(all_files)){
         if(grepl("\\.bed$", all_files[i])){
@@ -236,6 +311,8 @@ load_data <- function(all_files, c) {
 ## res is array for temporary results
 cluster_sites <- function(gr, w, c, overlap, n, res, s, greedy, order,
                         sitesToExclude, site_orientation, site_overlap){
+
+    #Default function used when no argument is assigned to cluster_by
 
     start_site <- start(gr)
     end_site <- end(gr)
@@ -339,6 +416,456 @@ cluster_sites <- function(gr, w, c, overlap, n, res, s, greedy, order,
         res[i, "isCluster"] <- isCluster
     }
     
+    res <- res[complete.cases(res), ]
+
+    #Case with one entry, Converting vector to matrix prior to return
+    if (is(res, "character")){
+        res.names <- names(res)
+        res = matrix(res, 1, length(res))
+        colnames(res) <- res.names
+    }
+    return(res)
+}
+
+cluster_by_greedy_false <- function(gr, w, c, overlap, n, res, s, greedy, order,
+                        sitesToExclude, site_orientation, site_overlap,
+                        allow_clusters_overlap, cluster_by, 
+                        include_partial_sites, partial_overlap_percentage){
+
+    #Greedy False - different clustering options
+    #Argument: cluster_by
+    #Description: clustering sites using different options.
+    #cluster_by options: startEnds, endsStarts, starts, ends, middles
+
+    #Argument: include_partial_sites
+    #Description: this argument allows to include partially overlapping sites
+    # with window size at the end of the cluster. If set to 'TRUE', partially
+    # overlapping sites are included, however, if set to 'FALSE', overlapping
+    # sites at the end of the cluster are not included. This option is used
+    # only when 'cluster_by' is either 'startsEnds' or 'ends'
+    # allow_clusters_overlap gives the user the ability to get overlapping
+    # clusters or not.
+
+    #Sub-clusters are omitted 
+    #(clusters having different start coordinate but same end coordinate)
+
+    start_site <- start(gr)
+    end_site <- end(gr)
+    end_check <- 0
+    site <- gr$site
+    exclusion_ls <- sitesToExclude
+    strand <- as.vector(strand(gr))
+    site_orientation_input <- site_orientation
+    site_overlap_input <- site_overlap
+
+    isCluster <- FALSE
+    
+    #looping index - esseential for jumping clusters or sites
+    #it depends on user input: allow_clusters_overlap T or F
+
+    for(i in seq_len(length(gr)-n+1)){
+        #Check overlap - Zero overlap returns all clusters
+        #either overlapping or not
+        if (isCluster) {
+            if ((start_site[i] - end) < overlap & overlap !=0) {
+                next
+                ## Allow or deny overlapping clusters
+            } else if((start_site[i] - end) < overlap & 
+                        allow_clusters_overlap == FALSE){
+                next
+            } else {
+                isCluster = FALSE
+            }
+        }
+
+        #cluster_by: startEnds
+        if(cluster_by == "startsEnds"){
+        if(!include_partial_sites){
+            if(end_site[(i+n-1)] - start_site[i] <= w){
+                ls <- site[i:((i+n)-1)]
+                sc <- start_site[i:((i+n)-1)]
+                ec <- end_site[i:((i+n)-1)]
+                so <- strand[i:((i+n)-1)]
+                end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                end <- ec[length(ec)]
+            } else {
+                next
+            }
+        }
+
+        if(include_partial_sites){
+            if (is.null(partial_overlap_percentage)) {
+                if((end_site[(i+n-1)] - start_site[i] <= w) || 
+                    ((end_site[(i+n-1)] > w + start_site[i]) && 
+                    (start_site[i] + w > start_site[(i+n-1)]) && 
+                    (start_site[i] + w < end_site[(i+n-1)]))){
+                
+                    ls <- site[i:((i+n)-1)]
+                    sc <- start_site[i:((i+n)-1)]
+                    ec <- end_site[i:((i+n)-1)]
+                    so <- strand[i:((i+n)-1)]
+                    end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                    end <- ec[length(ec)]
+                }
+                else {
+                    next
+                }
+            } else { # else if partial_overlap_percentage is set
+                if((end_site[(i+n-1)] - start_site[i] <= w) || 
+                    ((end_site[(i+n-1)] > w + start_site[i]) && 
+                    (start_site[i] + w > start_site[(i+n-1)]) && 
+                    (start_site[i] + w < end_site[(i+n-1)])) && 
+                    (((end_site[(i+n-1)] - start_site[(i+n-1)])-
+                    (end_site[(i+n-1)]-(w+start_site[i])))/(end_site[(i+n-1)]
+                    - start_site[(i+n-1)])>=partial_overlap_percentage)){
+                
+                    ls <- site[i:((i+n)-1)]
+                    sc <- start_site[i:((i+n)-1)]
+                    ec <- end_site[i:((i+n)-1)]
+                    so <- strand[i:((i+n)-1)]
+                    end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                    end <- ec[length(ec)]
+                }
+                else {
+                    next
+                }
+            }
+        }
+
+        #cluster_by: endsStarts
+    } else if(cluster_by == "endsStarts"){
+        if(start_site[(i+n-1)] - end_site[i] <= w){
+            ls <- site[i:((i+n)-1)]
+            sc <- start_site[i:((i+n)-1)]
+            ec <- end_site[i:((i+n)-1)]
+            so <- strand[i:((i+n)-1)]
+            end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+            end <- ec[length(ec)]
+        } else {
+            next
+        }
+
+        #cluster_by: middles
+    } else if(cluster_by == "middles"){
+        if((start_site[(i+n-1)] + floor(width(gr)[(i+n-1)]/2)) - 
+            (start_site[i] + floor(width(gr)[i]/2)) 
+                <= w){
+            ls <- site[i:((i+n)-1)]
+            sc <- start_site[i:((i+n)-1)]
+            ec <- end_site[i:((i+n)-1)]
+            so <- strand[i:((i+n)-1)]
+            end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+            end <- ec[length(ec)]
+        } else {
+            next
+        }
+
+        #cluster_by: starts
+    } else if(cluster_by == "starts"){
+        if(start_site[(i+n-1)] - start_site[i] <= w){
+            ls <- site[i:((i+n)-1)]
+            sc <- start_site[i:((i+n)-1)]
+            ec <- end_site[i:((i+n)-1)]
+            so <- strand[i:((i+n)-1)]
+            end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+            end <- ec[length(ec)]
+        } else {
+        next
+        }
+
+        #cluster_by: ends
+    } else if(cluster_by == "ends"){
+        if(!include_partial_sites && is.null(partial_overlap_percentage)){
+            if(end_site[(i+n-1)] - end_site[i] <= w){
+                ls <- site[i:((i+n)-1)]
+                sc <- start_site[i:((i+n)-1)]
+                ec <- end_site[i:((i+n)-1)]
+                so <- strand[i:((i+n)-1)]
+                end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                end <- ec[length(ec)]
+            } else {
+                next
+            }
+        }
+
+        if(include_partial_sites && is.null(partial_overlap_percentage)){
+            if((end_site[(i+n-1)] - end_site[i] <= w) || 
+                (end_site[(i+n-1)] > w + end_site[i]) && 
+                (end_site[i] + w > start_site[(i+n-1)]) && 
+                (end_site[i] + w < end_site[(i+n-1)])){
+
+                    ls <- site[i:((i+n)-1)]
+                    sc <- start_site[i:((i+n)-1)]
+                    ec <- end_site[i:((i+n)-1)]
+                    so <- strand[i:((i+n)-1)]
+                    end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                    end <- ec[length(ec)]
+            } else {
+            next
+            }
+        }
+
+        if(include_partial_sites && !(is.null(partial_overlap_percentage))){
+            if((end_site[(i+n-1)] - end_site[i] <= w) || 
+                (end_site[(i+n-1)] > w + end_site[i]) && 
+                (end_site[i] + w > start_site[(i+n-1)]) && 
+                (end_site[i] + w < end_site[(i+n-1)]) &&
+                (((end_site[(i+n-1)] - start_site[(i+n-1)])-
+                (end_site[(i+n-1)]-(w+end_site[i])))/(end_site[(i+n-1)]
+                - start_site[(i+n-1)]))>=partial_overlap_percentage){
+            
+            print(end_site[(i+n-1)] - start_site[(i+n-1)])
+                    ls <- site[i:((i+n)-1)]
+                    sc <- start_site[i:((i+n)-1)]
+                    ec <- end_site[i:((i+n)-1)]
+                    so <- strand[i:((i+n)-1)]
+                    end_check <- end_site[i:((i+n)-1)][((i+n)-1)]
+
+                    end <- ec[length(ec)]
+            } else {
+            next
+            }
+        }
+    }
+
+    #test the cluster of sites for different parameters
+    ans <- testCombn(ls, c, order, exclusion_ls,so,site_orientation_input, 
+                sc, ec, site_overlap_input)
+        isCluster = ans$logical
+        status = ans$status
+
+        ## if we get combnFail, skip
+        if(status == "combnFail"){
+            next
+        }
+
+        res[i, "seqnames"] <- as.character(seqnames(gr)[i])
+        res[i, "start"] <- start_site[i]
+        res[i, "end"] <- max(end_site[i:((i+n)-1)])
+        res[i, "strand"] <- s
+        res[i, "status"] <- status
+        res[i, "site"] <- paste(ls, collapse = ",")
+        res[i, "isCluster"] <- isCluster
+    }
+    
+    #return resulting cluster - either true or false cluster
+    res <- res[complete.cases(res), ]
+
+    #Case with one entry, Converting vector to matrix prior to return
+    if (is(res, "character")){
+        res.names <- names(res)
+        res = matrix(res, 1, length(res))
+        colnames(res) <- res.names
+    }
+    return(res)
+}
+
+cluster_by_greedy_true <- function(gr, w, c, overlap, n, res, s, greedy, order,
+                        sitesToExclude, site_orientation, site_overlap, 
+                        allow_clusters_overlap, cluster_by, 
+                        include_partial_sites, partial_overlap_percentage){
+
+    #Greedy True - different clustering options
+    #Argument: cluster_by
+    #Description: clustering sites using different options.
+    #cluster_by options: startEnds, endsStarts, starts, ends, middles
+
+    #Argument: include_partial_sites
+    #Description: this argument allows to include partially overlapping sites
+    # with window size at the end of the cluster. If set to 'TRUE', partially 
+    # overlapping sites are included, however, if set to 'FALSE', overlapping
+    # sites at the end of the cluster are not included. This option is used 
+    # only when 'cluster_by' is either 'startsEnds' or 'ends'
+    # allow_clusters_overlap gives the user the ability to get overlapping 
+    # clusters or not.
+    
+    #Sub-clusters are omitted 
+    #(clusters having different start coordinate but same end coordinate)
+
+    start_site <- start(gr)
+    end_site <- end(gr)
+    end_coordinate_check <- 0
+    site <- gr$site
+    exclusion_ls <- sitesToExclude
+    strand <- as.vector(strand(gr))
+    site_orientation_input <- site_orientation
+    site_overlap_input <- site_overlap
+
+    isCluster <- FALSE
+
+    for(i in seq_len(length(gr)-1)){
+        #Check overlap - Zero overlap returns all clusters
+        #either overlapping or not
+        if (isCluster) {
+            if ((start_site[i] - end) < overlap & overlap !=0) {
+                next
+                ## Allow or deny overlapping clusters
+            } else if((start_site[i] - end) < overlap & 
+                        allow_clusters_overlap == FALSE){
+                next
+            } else {
+                isCluster = FALSE
+            }
+        }
+
+        #A vector that hold indices of found sites within window size    
+        indices <- NULL
+
+        #cluster_by: startEnds
+        if(cluster_by == "startsEnds"){
+            indices <- which(end_site <= start_site[i] + w)[
+                i:(length(end_site <= start_site[i] + w))]
+            indices <- indices[!is.na(indices)]
+
+            if(include_partial_sites && is.null(partial_overlap_percentage)){
+                last_site <- indices[length(indices)]
+                while(last_site < length(gr)){
+                    if(end_site[(last_site+1)] >= start_site[i] + w & 
+                    start_site[i] + w >= start_site[(last_site+1)] & 
+                    start_site[i] + w <= end_site[(last_site+1)]){
+                    indices <- c(indices, (last_site+1))
+                    indices <- indices[!is.na(indices)]
+                    } else {break}
+                    last_site = last_site + 1
+                }
+            }
+
+            if(include_partial_sites && !(is.null(partial_overlap_percentage))){
+                last_site <- indices[length(indices)]
+                while(last_site < length(gr)){
+                    if(end_site[(last_site+1)] >= start_site[i] + w & 
+                    start_site[i] + w >= start_site[(last_site+1)] & 
+                    start_site[i] + w <= end_site[(last_site+1)] & 
+                    (((end_site[(last_site+1)] - start_site[(last_site+1)])-
+                    (end_site[(last_site+1)]-(w+start_site[i])))/
+                    (end_site[(last_site+1)]- start_site[(last_site+1)]))
+                        >=partial_overlap_percentage){
+                    indices <- c(indices, (last_site+1))
+                    indices <- indices[!is.na(indices)]
+                    } else {break}
+                    last_site = last_site + 1
+                }
+            }
+        }
+
+        #cluster_by: endsStarts
+        else if(cluster_by == "endsStarts"){
+            indices <- which(start_site <= end_site[i] + w)[
+                i:(length(start_site <= end_site[i] + w))]
+            indices <- indices[!is.na(indices)]
+        }
+
+        #cluster_by: middles        
+        else if(cluster_by == "middles"){
+            indices <- which(start_site + floor(width(gr)/2) <= 
+                (start_site[i] + floor(width(gr)[i]/2)) + w)[
+                    i:length(start_site + floor(width(gr)/2) <= 
+                        (start_site[i] + floor(width(gr)[i]/2)) + w)]
+            indices <- indices[!is.na(indices)]
+        }
+
+        #cluster_by: starts
+        else if(cluster_by == "starts"){
+            indices <- which(start_site <= start_site[i] + w)[
+                i:(length(start_site <= start_site[i] + w))]
+            indices <- indices[!is.na(indices)]
+        }
+
+        #cluster_by: ends
+        else if(cluster_by == "ends"){
+            indices <- which(end_site <= end_site[i] + w)[
+                i:(length(end_site <= end_site[i] + w))]
+            indices <- indices[!is.na(indices)]
+            
+            if(include_partial_sites && is.null(partial_overlap_percentage)){
+                last_site <- indices[length(indices)]
+                while(last_site < length(gr)){
+                if((end_site[last_site+1] - end_site[i] > w) && 
+                    (end_site[i] + w >= start_site[last_site+1]) && 
+                    (end_site[i] + w <= end_site[last_site+1])){
+                            indices <- c(indices, last_site+1)
+                } else {break}
+                last_site = last_site + 1
+                }
+            }
+
+            else if(include_partial_sites && 
+            !(is.null(partial_overlap_percentage))){
+                last_site <- indices[length(indices)]
+                while(last_site < length(gr)){
+                if((end_site[last_site+1] - end_site[i] > w) && 
+                    (end_site[i] + w >= start_site[last_site+1]) && 
+                    (end_site[i] + w <= end_site[last_site+1]) && 
+                    (((end_site[(last_site+1)] - start_site[(last_site+1)])-
+                    (end_site[(last_site+1)]-(w+end_site[i])))/
+                    (end_site[(last_site+1)] - start_site[(last_site+1)]))
+                        >=partial_overlap_percentage){
+                            indices <- c(indices, last_site+1)
+                } else {break}
+                last_site = last_site + 1
+                }
+            }
+        }
+        
+        #get 'end_site' coordinate
+        end <- end_site[indices[length(indices)]]
+
+        #Jump cluster if it has less than number of minimum
+        #required sites
+        if(length(indices) < n){
+            next
+        } else if(end_coordinate_check == 0) { 
+            #First cluster does not require sub-cluster check
+            ls <- gr$site[indices]
+            so <- as.vector(strand(gr)[indices])
+            sc <- start_site[indices]
+            ec <- end_site[indices]
+            end_coordinate_check = end
+        } else if (end_coordinate_check == end && is.null(exclusion_ls)){
+            next #omit sub-cluster
+        } else if(end_coordinate_check == end && !(is.null(exclusion_ls))){
+            ls <- gr$site[indices]
+            so <- as.vector(strand(gr)[indices])
+            sc <- start_site[indices]
+            ec <- end_site[indices]
+            end_coordinate_check = end
+        } else if(end_coordinate_check != end){
+            ls <- gr$site[indices]
+            so <- as.vector(strand(gr)[indices])
+            sc <- start_site[indices]
+            ec <- end_site[indices]
+            end_coordinate_check = end
+        }
+
+    #test the cluster of sites for different parameters
+    ans <- testCombn(ls, c, order, exclusion_ls,so,site_orientation_input, 
+                sc, ec, site_overlap_input)
+        isCluster = ans$logical
+        status = ans$status
+
+        ## if we get combnFail, skip
+        if(status == "combnFail"){
+            next
+        }
+
+        res[i, "seqnames"] <- as.character(seqnames(gr)[i])
+        res[i, "start"] <- start_site[i]
+        res[i, "end"] <- max(end_site[indices])
+        res[i, "strand"] <- s
+        res[i, "status"] <- status
+        res[i, "site"] <- paste(ls, collapse = ",")
+        res[i, "isCluster"] <- isCluster
+    }
+    
+    #return resulting cluster - either true or false cluster
     res <- res[complete.cases(res), ]
 
     #Case with one entry, Converting vector to matrix prior to return
