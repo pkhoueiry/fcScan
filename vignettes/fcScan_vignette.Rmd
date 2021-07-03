@@ -230,6 +230,45 @@ have `max distance and below`, then the cluster is considered `TRUE` cluster.
 When `site_overlap` is zero, distance between sites is not taken into 
 consideration. (Default is set to **0**)
 
+## Clustering option (cluster_by)
+The `cluster_by` option allows the usage of different ways in scanning for 
+sites. Using this option, scanning does not 'jump' clusters found.
+`cluster_by` can be `startsEnds`, `endsStarts`, `starts`, `ends`, 
+or `middles`. If we choose `startsEnds`, the clustering begins at the start of 
+the first site and it ends at the end of the last site within the window size.
+If we choose `endsStarts`, scanning begins at the end of the 
+first site and it ends at the start of the last site within the window size.
+if we choose `starts`, the clustering begins at the start of the first site
+and it ends at the start of the last site within the window size.
+if we choose `ends`, the clustering begins at the end of the first site
+and it ends at the end of the last site within the window size. 
+Also, if we choose `middles`, the clustering begins at the middle
+of the first site and it ends at the middle of the last site within the 
+window size. (Default is set to **startsEnds**)
+
+## Overlapping Clusters option (allow_clusters_overlap)
+The `allow_clusters_overlap` allows the user whether to include overlapping
+clusters or not. This option can be used only when `cluster_by` option is
+assigned, otherwise it is ignored. (Default is set to FALSE) 
+
+## Include partially overlapping sites (include_partial_sites)
+This option can be only used in case where the "cluster_by" choosen is 
+"startsEnds" or "ends", otherwise it is ignored. If it is set to `TRUE`, 
+partially overlapping sites within window size (at the end of the cluster) 
+are allowed. However, if it is set to `FALSE`, partially overlapping sites 
+are not included in the cluster found. (Default is set to **FALSE**)
+
+## Control addition of partially overlapping sites (partial_overlap_percentage)
+
+This option allows the user to choose which partially overlapping site are 
+included. The amount of overlap between the last site found and the window
+size controls the addition or removal of those sites. For example, if 
+`partial_overlap_percentage` is set to 0.6, this means that the window size 
+should overlap this site by 60% of its size. However, if it fails, this site
+won't be included in the cluster found. This option can be only used in case 
+where the "cluster_by" choosen is "startsEnds" or "ends", 
+otherwise it is ignored. (Default is set to **NULL**)
+
 ## Verbose (verbose)
 The `verbose` option allows the printing of additional messages and the
 list of clusters that failed for lack of correct combination of sites.
