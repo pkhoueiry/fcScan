@@ -248,8 +248,7 @@ window size. (Default is set to **startsEnds**)
 
 ## Overlapping Clusters option (allow_clusters_overlap)
 The `allow_clusters_overlap` allows the user whether to include overlapping
-clusters or not. This option can be used only when `cluster_by` option is
-assigned, otherwise it is ignored. (Default is set to FALSE) 
+clusters or not. (Default is set to FALSE) 
 
 ## Include partially overlapping sites (include_partial_sites)
 This option can be only used in case where the "cluster_by" choosen is 

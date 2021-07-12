@@ -224,15 +224,15 @@ in condition must be explicitly defined")
 
         if (length(gr) >= n) {
             #cluster_by is NULL - default algorithm is used
-            if(is.null(cluster_by)){
-            result = cluster_sites(gr, w, c, overlap, n,
-                    res, s, greedy, order, sitesToExclude, 
-                        site_orientation, site_overlap)
-            final = rbind(final, result)
-            }
+            # if(is.null(cluster_by)){
+            # result = cluster_sites(gr, w, c, overlap, n,
+            #         res, s, greedy, order, sitesToExclude, 
+            #             site_orientation, site_overlap)
+            # final = rbind(final, result)
+            # }
 
             #valid cluster_by option and greedy = FALSE
-            else if(!is.null(cluster_by) && greedy == FALSE){
+            if(greedy == FALSE){
                 result = cluster_by_greedy_false(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
                     site_orientation, site_overlap, allow_clusters_overlap,
@@ -242,7 +242,7 @@ in condition must be explicitly defined")
             }
 
             #valid cluster_by option and greedy = TRUE
-            else if(!is.null(cluster_by) && greedy == TRUE){
+            else if(greedy == TRUE){
                 result = cluster_by_greedy_true(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
                     site_orientation, site_overlap, allow_clusters_overlap,
@@ -309,123 +309,6 @@ load_data <- function(all_files, c) {
 ## n contains the total number of sites desired
 ## s contains strand
 ## res is array for temporary results
-cluster_sites <- function(gr, w, c, overlap, n, res, s, greedy, order,
-                        sitesToExclude, site_orientation, site_overlap){
-
-    #Default function used when no argument is assigned to cluster_by
-
-    start_site <- start(gr)
-    end_site <- end(gr)
-    end_check <- 0
-    site <- gr$site
-    exclusion_ls <- sitesToExclude
-    strand <- as.vector(strand(gr))
-    site_orientation_input <- site_orientation
-    site_overlap_input <- site_overlap
-
-    isCluster <- FALSE
-
-    #upper_boundary controls looping limit
-    if (greedy == FALSE) {
-        # number of sites to be searched must be respected
-        # and looping should be made to fit the number of sites in condition
-        # because cluster should have max size of 'n' sites
-        upper_boundary = length(gr) - n + 1
-    } else {
-        #greedy = TRUE, no limit on number of sites in the cluster
-        upper_boundary = length(gr)
-    }
-    for (i in seq_len(upper_boundary)) {
-        ## check for overlap. basically, the first new
-        ## site should satisfy the overlap condition
-        if (greedy == TRUE) {
-            if (end_site[i] > start_site[i] + w) {
-                next
-            }
-        }
-        ## 
-        if (isCluster) {
-            if ((start_site[i] - end) < overlap) {
-                next
-            } else {
-                isCluster = FALSE
-            }
-        }
-        if (greedy == TRUE) {
-            end = end(gr)[end(gr) <= start_site[i] + w]
-            end = end[length(end)]
-            if(end_check == 0){
-                end_check = end
-                iEnd = which(end(gr) == end)[1]
-                # Cluster of sites to be checked (ls),
-                # their orientation (so),
-                # their start and end coordinates (sc and ec respectively)
-                ls <- site[i:iEnd]
-                so <- strand[i:iEnd]
-                sc <- start_site[i:iEnd]
-                ec <- end_site[i:iEnd]
-            }
-            else if(end_check == end & is.null(exclusion_ls)){
-                next
-            }
-            else {
-                end_check = end
-                iEnd = which(end(gr) == end)[1]
-                ls <- site[i:iEnd]
-                so <- strand[i:iEnd]
-                sc <- start_site[i:iEnd]
-                ec <- end_site[i:iEnd]
-            }
-        }
-        else {
-            end = max((end_site[i:(i + n - 1)]))
-        }
-        ## putative cluster is bigger than window
-        if (greedy == FALSE) {
-            if ((end - start_site[i]) > w) {
-                next
-            } else {
-                ls <- site[i:(i + n - 1)]
-                so <- strand[i:(i + n - 1)]
-                sc <- start_site[i:(i + n -1)]
-                ec <- end_site[i:(i + n -1)]
-            }
-        }
-
-        ## checking if required sites are present
-        ans <- testCombn(ls, c, order, exclusion_ls,so,site_orientation_input, 
-                sc, ec, site_overlap_input)
-        isCluster = ans$logical
-        status = ans$status
-
-        ## if we get combnFail, skip
-        if(status == "combnFail"){
-            next
-        }
-
-        res[i, "seqnames"] <- as.character(seqnames(gr)[i])
-        res[i, "start"] <- start_site[i]
-        res[i, "end"] <- max(ec)
-        res[i, "strand"] <- s
-        res[i, "status"] <- ans$status
-        if (greedy == TRUE) {
-            res[i, "site"] <- paste(site[i:iEnd], collapse = ",")
-        } else{
-            res[i, "site"] <- paste(site[i:(i + n - 1)], collapse = ",")
-        }
-        res[i, "isCluster"] <- isCluster
-    }
-    
-    res <- res[complete.cases(res), ]
-
-    #Case with one entry, Converting vector to matrix prior to return
-    if (is(res, "character")){
-        res.names <- names(res)
-        res = matrix(res, 1, length(res))
-        colnames(res) <- res.names
-    }
-    return(res)
-}
 
 cluster_by_greedy_false <- function(gr, w, c, overlap, n, res, s, greedy, order,
                         sitesToExclude, site_orientation, site_overlap,
