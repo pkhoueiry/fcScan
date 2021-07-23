@@ -7,7 +7,7 @@ getCluster(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL, s = "*",
 order = NULL, site_orientation = NULL, site_overlap = 0, 
 cluster_by = "startsEnds", allow_clusters_overlap = FALSE, 
 include_partial_sites = FALSE, partial_overlap_percentage= NULL, 
-verbose = FALSE)
+threads = 1, verbose = FALSE)
 
 }
 \description{
@@ -87,6 +87,14 @@ defined window size and satisfiying user defined categorical conditions.
                     overlapping sites are included in the cluster found 
                     regardless of the amount of overlap. 
                     The default is set to NULL}
+
+    \item{threads}{integer; This option allows to run getCluster using multiple
+                    threads. It is recommended to use it especially when the
+                    input dataset used is large. When set to 0, getCluster 
+                    checks the input dataset and uses the adequate number of 
+                    threads to get the result faster. It can be set manually 
+                    according to the available number of threads.
+                    The default is set to 1}
 
     \item{verbose}{logical; If FALSE, only clusters that passed
                         combination condition are shown. used for

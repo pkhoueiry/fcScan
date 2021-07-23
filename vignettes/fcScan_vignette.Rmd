@@ -258,15 +258,22 @@ are allowed. However, if it is set to `FALSE`, partially overlapping sites
 are not included in the cluster found. (Default is set to **FALSE**)
 
 ## Control addition of partially overlapping sites (partial_overlap_percentage)
-
 This option allows the user to choose which partially overlapping site are 
 included. The amount of overlap between the last site found and the window
 size controls the addition or removal of those sites. For example, if 
 `partial_overlap_percentage` is set to 0.6, this means that the window size 
 should overlap this site by 60% of its size. However, if it fails, this site
 won't be included in the cluster found. This option can be only used in case 
-where the "cluster_by" choosen is "startsEnds" or "ends", 
+where the "cluster_by" chosen is "startsEnds" or "ends", 
 otherwise it is ignored. (Default is set to **NULL**)
+
+## Multi-threading (threads)
+This option allows to distribute the run over multiple threads. It is
+recommended to use multiple threads when the input dataset is large.
+When `threads` is set to 0, `getCluster` reserves the adequate number of
+threads and performs the run. This will dramatically increase the speed of
+`getCluster`. The user can choose the number of threads between 1 and the 
+maximum number of available threads. (Default is set to **1**)
 
 ## Verbose (verbose)
 The `verbose` option allows the printing of additional messages and the

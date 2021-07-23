@@ -1,13 +1,14 @@
 ##' @title fcScan
 
 ##' @export getCluster
-
+globalVariables(c("chr"))
 getCluster <- function(x, w, c, overlap = 0, greedy = FALSE, seqnames = NULL,
                     s = "*" , order = NULL, site_orientation = NULL, 
                     site_overlap = 0, cluster_by = "startsEnds", 
                     allow_clusters_overlap = FALSE, 
                     include_partial_sites = FALSE, 
-                    partial_overlap_percentage= NULL, verbose = FALSE) {
+                    partial_overlap_percentage= NULL, 
+                    threads = 1, verbose = FALSE) {
 
     sitesToExclude <- NULL
     final = NULL
@@ -207,6 +208,23 @@ in condition must be explicitly defined")
     else{
     x = subset(x, x$site %in% names(c))
     }
+
+    if(threads %% 1 !=0 || threads < 0 || threads > detectCores()){
+        warning("Invalid threads value - using the default")
+        threads = 1
+    }
+    if(threads == 0){
+        if(detectCores() >= length(unique(as.character(seqnames(x))))){
+            threads = length(unique(as.character(seqnames(x))))
+        }
+        else if(detectCores() < length(unique(as.character(seqnames(x))))){
+            threads = detectCores()
+        }
+    } 
+    if(threads > length(unique(as.character(seqnames(x))))){
+        threads = length(unique(as.character(seqnames(x))))
+        cat("Some threads are not going to be used\n")
+    }
     
     unique_seqnames = unique((seqnames(x)))
 
@@ -217,41 +235,69 @@ in condition must be explicitly defined")
 
 
     ## looping over chromosomes and call cluster_sites
-    for(seq in seq_along(unique_seqnames)){
-
-        gr = subset(x, seqnames == unique_seqnames[seq])
-        gr = sort(gr, ignore.strand = TRUE)
-
-        if (length(gr) >= n) {
-            #cluster_by is NULL - default algorithm is used
-            # if(is.null(cluster_by)){
-            # result = cluster_sites(gr, w, c, overlap, n,
-            #         res, s, greedy, order, sitesToExclude, 
-            #             site_orientation, site_overlap)
-            # final = rbind(final, result)
-            # }
-
-            #valid cluster_by option and greedy = FALSE
-            if(greedy == FALSE){
-                result = cluster_by_greedy_false(gr, w, c, overlap, n,
+    cat("Running getCluster using",threads,"threads\n")
+    registerDoParallel(threads)
+    if(length(x) >= n && greedy == FALSE){
+        final <- foreach(chr=unique(as.character(seqnames(x))),
+        .combine = rbind) %dopar% {
+            gr = subset(x, seqnames == chr)
+            gr = sort(gr, ignore.strand = TRUE)
+            cluster_by_greedy_false(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
                     site_orientation, site_overlap, allow_clusters_overlap,
                     cluster_by, include_partial_sites, 
                     partial_overlap_percentage)
-            final = rbind(final, result)
-            }
-
-            #valid cluster_by option and greedy = TRUE
-            else if(greedy == TRUE){
-                result = cluster_by_greedy_true(gr, w, c, overlap, n,
+        }
+    } else if(length(x) >= n && greedy == TRUE){
+        final <- foreach(chr=unique(as.character(seqnames(x))),
+        .combine = rbind) %dopar% {
+            gr = subset(x, seqnames == chr)
+            gr = sort(gr, ignore.strand = TRUE)
+            cluster_by_greedy_true(gr, w, c, overlap, n,
                     res, s, greedy, order, sitesToExclude, 
                     site_orientation, site_overlap, allow_clusters_overlap,
                     cluster_by, include_partial_sites, 
                     partial_overlap_percentage)
-            final = rbind(final, result)
-            }
         }
     }
+
+    
+    
+    # for(seq in seq_along(unique_seqnames)){
+
+    #     gr = subset(x, seqnames == unique_seqnames[seq])
+    #     gr = sort(gr, ignore.strand = TRUE)
+
+    #     if (length(gr) >= n) {
+    #         #cluster_by is NULL - default algorithm is used
+    #         # if(is.null(cluster_by)){
+    #         # result = cluster_sites(gr, w, c, overlap, n,
+    #         #         res, s, greedy, order, sitesToExclude, 
+    #         #             site_orientation, site_overlap)
+    #         # final = rbind(final, result)
+    #         # }
+
+    #         #valid cluster_by option and greedy = FALSE
+    #         if(greedy == FALSE){
+    #             result = cluster_by_greedy_false(gr, w, c, overlap, n,
+    #                 res, s, greedy, order, sitesToExclude, 
+    #                 site_orientation, site_overlap, allow_clusters_overlap,
+    #                 cluster_by, include_partial_sites, 
+    #                 partial_overlap_percentage)
+    #         final = rbind(final, result)
+    #         }
+
+    #         #valid cluster_by option and greedy = TRUE
+    #         else if(greedy == TRUE){
+    #             result = cluster_by_greedy_true(gr, w, c, overlap, n,
+    #                 res, s, greedy, order, sitesToExclude, 
+    #                 site_orientation, site_overlap, allow_clusters_overlap,
+    #                 cluster_by, include_partial_sites, 
+    #                 partial_overlap_percentage)
+    #         final = rbind(final, result)
+    #         }
+    #     }
+    # }
 
     #Get final result
     if(length(final) !=0 ){
