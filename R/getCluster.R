@@ -210,8 +210,9 @@ in condition must be explicitly defined")
     }
 
     if(threads %% 1 !=0 || threads < 0 || threads > detectCores()){
-        warning("Invalid threads value - using the default")
-        threads = 1
+        message("invalid \"threads\" value")
+        message("getCluster will use all the available threads instead")
+        threads = 0
     }
     if(threads == 0){
         if(detectCores() >= length(unique(as.character(seqnames(x))))){
