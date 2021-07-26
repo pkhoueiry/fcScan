@@ -16,6 +16,9 @@ The below R packages are required for installation:
 + rtracklayer
 + GenomicRanges
 + IRanges
++ foreach
++ doParallel
++ parallel
 
 Installation
 ------------
